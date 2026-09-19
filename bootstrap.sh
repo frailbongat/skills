@@ -39,7 +39,8 @@ if [[ $SKIP_MANAGED -eq 0 ]]; then
   while read -r pkg; do
     [[ -z "$pkg" ]] && continue
     echo "install  $pkg"
-    npx skills add "$pkg" -g -y
+    # </dev/null keeps the Skills CLI from swallowing the loop's input.
+    npx skills add "$pkg" -g -y </dev/null
   done < <(read_packages)
   echo
 fi
