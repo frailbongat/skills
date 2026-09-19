@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Put every skill this machine should have back in place.
 #
-#   1. installs the third-party skills listed in SKILLS.md, reading their
-#      sources from reference-skill-lock.json
+#   1. installs the third-party skills recorded in reference-skill-lock.json,
+#      the same set listed in the README table
 #   2. runs install.sh to symlink the skills written in this repo
 #
 # Safe to re-run. Pass --skip-managed to only run step 2.
