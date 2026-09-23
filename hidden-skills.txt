@@ -49,6 +49,14 @@ mobile-native
 full-output-enforcement
 find-skills
 
+# --- paseo extras, only used when explicitly asked for ---
+# `paseo` names paseo-help. That is fine, because AGENTS.md tells agents to
+# read ~/.agents/skills/<name>/SKILL.md for any named skill they cannot see.
+paseo-help
+paseo-advisor
+paseo-committee
+paseo-handoff
+
 # --- rarely used, no visible skill hands work to them ---
 # (paseo-help stays visible: the paseo skill names it)
 paseo-plugin
