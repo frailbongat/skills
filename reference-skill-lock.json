@@ -62,14 +62,13 @@
       "updatedAt": "2026-09-16T05:12:41.811Z"
     },
     "prototype": {
-      "source": "mattpocock/skills",
+      "source": "emilkowalski/skills",
       "sourceType": "github",
-      "sourceUrl": "https://github.com/mattpocock/skills.git",
-      "skillPath": "skills/engineering/prototype/SKILL.md",
-      "skillFolderHash": "e41d92e171f074a2b6887d8f6faca4a15c83d1ca",
-      "pluginName": "mattpocock-skills",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/prototype/SKILL.md",
+      "skillFolderHash": "34cd3a303aef0a975fcce3ac906d6b293e600399",
       "installedAt": "2026-09-16T05:12:41.812Z",
-      "updatedAt": "2026-09-16T05:12:41.812Z"
+      "updatedAt": "2026-09-23T05:09:23.080Z"
     },
     "research": {
       "source": "mattpocock/skills",
@@ -314,7 +313,7 @@
       "skillPath": "skills/animate/SKILL.md",
       "skillFolderHash": "a92e36f28d741aee4ff77d1a001300d7e86e07fe",
       "installedAt": "2026-09-22T18:46:31.613Z",
-      "updatedAt": "2026-09-22T18:46:31.613Z"
+      "updatedAt": "2026-09-23T05:09:23.064Z"
     },
     "unslop": {
       "source": "cursor/plugins",
@@ -324,6 +323,114 @@
       "skillFolderHash": "d5baa969e71c4ddb563412b0ec170fa3b05b6d6e",
       "installedAt": "2026-09-23T02:25:48.309Z",
       "updatedAt": "2026-09-23T02:37:10.518Z"
+    },
+    "animate-expo": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/animate-expo/SKILL.md",
+      "skillFolderHash": "6874701c790c7e74926ccd0a8716647a81424c85",
+      "installedAt": "2026-09-23T05:09:23.070Z",
+      "updatedAt": "2026-09-23T05:09:23.070Z"
+    },
+    "animation-vocabulary": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/animation-vocabulary/SKILL.md",
+      "skillFolderHash": "d49565744427887a1f719de1ceee04d941d4e681",
+      "installedAt": "2026-09-23T05:09:23.071Z",
+      "updatedAt": "2026-09-23T05:09:23.071Z"
+    },
+    "apple-design": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/apple-design/SKILL.md",
+      "skillFolderHash": "cd509ae729c86487d352e17a26651217a4c25711",
+      "installedAt": "2026-09-23T05:09:23.072Z",
+      "updatedAt": "2026-09-23T05:09:23.072Z"
+    },
+    "ask-sonner": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/ask-sonner/SKILL.md",
+      "skillFolderHash": "aeca3dba0eb0415fa5a310cd6823b824fe60323d",
+      "installedAt": "2026-09-23T05:09:23.073Z",
+      "updatedAt": "2026-09-23T05:09:23.073Z"
+    },
+    "emil-design-eng": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/emil-design-eng/SKILL.md",
+      "skillFolderHash": "db7a20dc1d8ad26a0307dcb45ebc79fc372f5c69",
+      "installedAt": "2026-09-23T05:09:23.074Z",
+      "updatedAt": "2026-09-23T05:09:23.074Z"
+    },
+    "find-animation-opportunities": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/find-animation-opportunities/SKILL.md",
+      "skillFolderHash": "e6443880f38e33cf78e5d678471eed35e8566763",
+      "installedAt": "2026-09-23T05:09:23.075Z",
+      "updatedAt": "2026-09-23T05:09:23.075Z"
+    },
+    "improve-animations": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/improve-animations/SKILL.md",
+      "skillFolderHash": "cf1f7aabac34c08f2cf833f039fa99af2f415183",
+      "installedAt": "2026-09-23T05:09:23.076Z",
+      "updatedAt": "2026-09-23T05:09:23.076Z"
+    },
+    "mobile-native": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/mobile-native/SKILL.md",
+      "skillFolderHash": "fdad6e6e91d8bbfda7164c7027269a8389dbadcd",
+      "installedAt": "2026-09-23T05:09:23.077Z",
+      "updatedAt": "2026-09-23T05:09:23.077Z"
+    },
+    "pick-ui-library": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/pick-ui-library/SKILL.md",
+      "skillFolderHash": "370e19776f0aa2403a2edeed78266bd6a5d78036",
+      "installedAt": "2026-09-23T05:09:23.079Z",
+      "updatedAt": "2026-09-23T05:09:23.079Z"
+    },
+    "review-animations": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/review-animations/SKILL.md",
+      "skillFolderHash": "0e0d3cb3e07ca307fe946ccaf57f6c82eb75124a",
+      "installedAt": "2026-09-23T05:09:23.081Z",
+      "updatedAt": "2026-09-23T05:09:23.081Z"
+    },
+    "write-swift": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/emilkowalski/skills.git",
+      "skillPath": "skills/write-swift/SKILL.md",
+      "skillFolderHash": "bdefda3891d347b8a183bdc727e4a1de2be3c82b",
+      "installedAt": "2026-09-23T05:09:23.082Z",
+      "updatedAt": "2026-09-23T05:09:23.082Z"
+    },
+    "build-awwwards-quality-sites": {
+      "source": "MengTo/Skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/MengTo/Skills.git",
+      "skillPath": "agent-skills/web-design/build-awwwards-quality-sites/SKILL.md",
+      "skillFolderHash": "542d01c832988b7db2ace8032a7cf94b0c11d6bb",
+      "installedAt": "2026-09-23T05:09:57.718Z",
+      "updatedAt": "2026-09-23T05:09:57.718Z"
     }
   },
   "dismissed": {

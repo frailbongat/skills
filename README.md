@@ -16,10 +16,11 @@ git clone https://github.com/frailbongat/skills.git ~/skills
 cd ~/skills && ./bootstrap.sh
 ```
 
-`bootstrap.sh` does two jobs:
+`bootstrap.sh` does three jobs:
 
 1. installs each skill in the tables below with `npx skills add`
 2. runs `install.sh`, which symlinks the skills in this repo into each agent
+3. runs `hide-skills.sh`, which hides the skills in `hidden-skills.txt` from the system prompt
 
 Skip step 1 with `./bootstrap.sh --skip-managed` if you only want my skills. It needs `npx`, plus `jq` or `python3` to read the lock file.
 
@@ -54,6 +55,27 @@ Re-running it is safe. It replaces its own symlinks and leaves real folders alon
 
 Symlinks mean an edit in this repo reaches every agent at once, with no copy step.
 
+## Hidden from the system prompt
+
+Every installed skill puts its name and its whole description in the system prompt of every session, before I have typed anything. At 44 visible skills that was about 5,100 tokens a session, and the design and animation cluster was about 3,100 of it. Worse than the cost, most of those entries say the same thing in different words, so the agent had eleven plausible answers to "make this look good" and picked badly.
+
+`hidden-skills.txt` lists the ones that stay installed but stop advertising themselves. `hide-skills.sh` stamps `disable-model-invocation: true` into each one's front matter, which is the pi and Agent Skills field for "do not put this in the system prompt". Twenty skills, about 2,500 tokens back.
+
+```bash
+./hide-skills.sh            # hide everything in the list
+./hide-skills.sh --check    # report which are hidden, change nothing
+./hide-skills.sh --undo     # put them all back
+```
+
+A hidden skill still works. Two ways to reach one:
+
+- `/skill:<name>` runs it, same as before
+- an agent reads `~/.agents/skills/<name>/SKILL.md` by path when something points it there
+
+Nothing pulls a hidden skill in on its own. That is the whole trade, so the list has two hard rules. Never hide a skill that a still-visible skill hands work to by name, and never hide one that a live project names in its own docs or prompts. `emil-design-eng` and `build-awwwards-quality-sites` were on the first draft of the list until `gossgroup.co` turned out to name both in its component headers.
+
+The Skills CLI rewrites `SKILL.md` from the source repo, so `npx skills add` and `npx skills update` both wipe the stamp. Re-run `./hide-skills.sh` after either. `sync.sh` is unaffected, it only reads descriptions.
+
 ## Skills I did not write
 
 Forty skills sit in `~/.agents/skills` that are not mine. Thirty four come from the [Skills CLI](https://skills.sh), which records them in `~/.agents/.skill-lock.json`, and those thirty four are the tables below, one per repo they came from:
@@ -65,7 +87,7 @@ or per plugin when a repo holds several, biggest first. Install any single
 row with `npx skills add <from>@<skill> -g -y`, or all of them with
 `./bootstrap.sh`.
 
-### [mattpocock/skills](https://github.com/mattpocock/skills), 18 skills
+### [mattpocock/skills](https://github.com/mattpocock/skills), 17 skills
 
 | Skill | What it does |
 | --- | --- |
@@ -76,7 +98,6 @@ row with `npx skills add <from>@<skill> -g -y`, or all of them with
 | `grilling` | Grill the user relentlessly about a plan, decision, or idea. |
 | `handoff` | Compact the current conversation into a handoff document for another agent to pick up. |
 | `implement` | Implement a piece of work based on a spec or set of tickets. |
-| `prototype` | Build a throwaway prototype to answer a design question. |
 | `research` | Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo. |
 | `resolving-merge-conflicts` | Use when you need to resolve an in-progress git merge/rebase conflict. |
 | `setup-matt-pocock-skills` | Configure this repo for the engineering skills: set up its issue tracker, triage label vocabulary, and domain doc layout. |
@@ -106,17 +127,35 @@ row with `npx skills add <from>@<skill> -g -y`, or all of them with
 | `redesign-existing-projects` | Upgrades existing websites and apps to premium quality. |
 | `stitch-design-taste` | Semantic Design System Skill for Google Stitch. |
 
+### [emilkowalski/skills](https://github.com/emilkowalski/skills), 13 skills
+
+| Skill | What it does |
+| --- | --- |
+| `animate` | Build an animation from scratch, making the decisions in the order that determines whether it feels right — should it animate at all, what purpose, which tool, which properties, which curve and duration, how it interrupts, how it exits. |
+| `animate-expo` | Build animations in React Native and Expo, making the decisions in the order that determines whether they feel right — should it animate, which thread it runs on, which properties, spring or timing, how the gesture hands off, how it degrades. |
+| `animation-vocabulary` | Reverse-lookup glossary that turns a vague description of a web animation or motion effect into its exact term ("the bouncy thing when a popover opens" → Pop in; "the iOS rubber-band scroll" → Rubber-banding). |
+| `apple-design` | Apple's approach to interface design and fluid, physical motion, translated for the web. |
+| `ask-sonner` | Guide to Sonner, the React toast library — install and wire up the Toaster, pick the right toast() call, promise and loading toasts, updating, dismissing and persisting toasts, styling, theming and icons, positioning and multiple toasters. |
+| `emil-design-eng` | This skill encodes Emil Kowalski's philosophy on UI polish, component design, animation decisions, and the invisible details that make software feel great. |
+| `find-animation-opportunities` | Search a codebase or UI for places that don't animate but should, and reject everything that shouldn't. |
+| `improve-animations` | Survey a codebase's animation and motion code as a senior motion advisor, then produce a prioritized audit and self-contained implementation plans for other agents (or cheaper models) to execute. |
+| `mobile-native` | Make a web app feel native on a phone — the small CSS and meta-tag fixes that separate "a website in a browser" from something that feels installed. |
+| `pick-ui-library` | Pick the right library for a given frontend task from a curated, opinionated list — numbers, OTP inputs, charts, command menus, virtualization, drag and drop, toasts, state, styling, and more. |
+| `prototype` | Build multiple genuinely different versions of a UI piece you describe, rendered behind a visual picker so you can flip through them live and promote the one that feels right. |
+| `review-animations` | Reviews animation and motion code against a high craft bar derived from Emil Kowalski's design engineering philosophy. |
+| `write-swift` | How to write modern Swift well — modeling with value types, Swift 6 data-race safety and approachable concurrency (@concurrent, main-actor-by-default, actors, task groups), protocols and generics (some vs any), API design, performance and ARC, Swift Testing, macros, and the modern language features agents don't know about yet. |
+
+### [MengTo/Skills](https://github.com/MengTo/Skills), 1 skill
+
+| Skill | What it does |
+| --- | --- |
+| `build-awwwards-quality-sites` | Art-direct and implement distinctive, motion-rich marketing, editorial, portfolio, and landing websites with original reference-inspired imagery, standout heroes, GSAP choreography, one smooth-scroll engine, optional Three.js shaders, honest icon and logo sourcing, photo avatars, accessibility, and performance safeguards. |
+
 ### [cursor/plugins/pstack](https://github.com/cursor/plugins/tree/main/pstack), 1 skill
 
 | Skill | What it does |
 | --- | --- |
 | `unslop` | Cut AI tells from any writing. |
-
-### [emilkowalski/skills](https://github.com/emilkowalski/skills), 1 skill
-
-| Skill | What it does |
-| --- | --- |
-| `animate` | Build an animation from scratch, making the decisions in the order that determines whether it feels right — should it animate at all, what purpose, which tool, which properties, which curve and duration, how it interrupts, how it exits. |
 
 ### [vercel-labs/skills](https://github.com/vercel-labs/skills), 1 skill
 

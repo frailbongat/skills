@@ -4,8 +4,10 @@
 #   1. installs the third-party skills recorded in reference-skill-lock.json,
 #      the same set listed in the README table
 #   2. runs install.sh to symlink the skills written in this repo
+#   3. runs hide-skills.sh to hide the skills in hidden-skills.txt from the
+#      system prompt, so a fresh machine gets the same trimmed context
 #
-# Safe to re-run. Pass --skip-managed to only run step 2.
+# Safe to re-run. Pass --skip-managed to only run steps 2 and 3.
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -38,10 +40,16 @@ fi
 
 "$REPO_DIR/install.sh"
 
+echo
+"$REPO_DIR/hide-skills.sh"
+
 cat <<'EOF'
 
 Two sets of skills this script cannot install:
 
   - Paseo skills: the Paseo app writes them when you run it.
   - impeccable: run `npx impeccable`, which writes one copy per agent.
+
+After either of those, re-run ./hide-skills.sh. It is the only thing that
+keeps the hidden set hidden, and any skill install or update undoes it.
 EOF

@@ -1,0 +1,50 @@
+# Skills hidden from the agent's system prompt.
+#
+# hide-skills.sh stamps `disable-model-invocation: true` into each skill listed
+# here. A hidden skill is still installed and still works, it just costs no
+# tokens until you run `/skill:<name>` or an agent reads its SKILL.md by path.
+#
+# Why: 44 visible skills cost ~5,100 tokens of every single session, and the
+# design cluster was ~3,100 of that. Most of those entries are near-duplicates
+# of each other ("make the frontend look premium"), so they were paying twice,
+# once in tokens and once in bad skill choices.
+#
+# Rules for this list:
+#   - Never hide a skill another VISIBLE skill hands work to by name.
+#   - Never hide a skill a live project names in its own docs or prompts.
+#   - One name per line. Blank lines and # comments are ignored.
+#
+# Kept visible on purpose:
+#   design-taste-frontend         gossgroup.co wraps it in .pi/skills/gg-design
+#   impeccable                    broadest design entry point, covers the rest
+#   animate                       the only motion build skill
+#   emil-design-eng               gossgroup.co names it in component headers
+#   build-awwwards-quality-sites  gossgroup.co names it in component headers
+
+# --- design, near-duplicates of design-taste-frontend / impeccable ---
+design-taste-frontend-v1
+high-end-visual-design
+gpt-taste
+stitch-design-taste
+industrial-brutalist-ui
+minimalist-ui
+redesign-existing-projects
+
+# --- image generation, only useful when explicitly asked for ---
+brandkit
+image-to-code
+imagegen-frontend-web
+imagegen-frontend-mobile
+
+# --- motion, all reachable from `animate` ---
+animation-vocabulary
+find-animation-opportunities
+improve-animations
+apple-design
+animate-expo
+
+# --- narrow single-topic references ---
+ask-sonner
+mobile-native
+full-output-enforcement
+find-skills
