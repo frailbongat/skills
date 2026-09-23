@@ -2,8 +2,9 @@
 # Shared reader for reference-skill-lock.json. Source this, then call lock_rows.
 #
 # lock_rows <lock-file> prints one tab-separated row per skill:
-#   name  source  sourceType  sourceUrl
-# Sorted by name.
+#   name  source  sourceType  sourceUrl  skillPath
+# Sorted by name. skillPath is the skill's path inside its repo, which is what
+# names the plugin when one repo holds several.
 
 lock_rows() {
   local lock_file="$1"
@@ -13,7 +14,7 @@ lock_rows() {
       .skills
       | to_entries
       | sort_by(.key)[]
-      | [.key, (.value.source // ""), (.value.sourceType // ""), (.value.sourceUrl // "")]
+      | [.key, (.value.source // ""), (.value.sourceType // ""), (.value.sourceUrl // ""), (.value.skillPath // "")]
       | @tsv
     ' "$lock_file"
   elif command -v python3 >/dev/null 2>&1; then
@@ -22,7 +23,7 @@ import json, sys
 lock = json.load(open(sys.argv[1]))
 for name in sorted(lock["skills"]):
     entry = lock["skills"][name]
-    fields = [name, entry.get("source", ""), entry.get("sourceType", ""), entry.get("sourceUrl", "")]
+    fields = [name, entry.get("source", ""), entry.get("sourceType", ""), entry.get("sourceUrl", ""), entry.get("skillPath", "")]
     print("\t".join(fields))
 ' "$lock_file"
   else

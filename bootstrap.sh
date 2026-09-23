@@ -23,7 +23,7 @@ if [[ $SKIP_MANAGED -eq 0 ]]; then
     exit 1
   fi
 
-  while IFS=$'\t' read -r name source source_type source_url; do
+  while IFS=$'\t' read -r name source source_type source_url _; do
     [[ -z "$name" ]] && continue
     # install_args returns one word for GitHub skills and three for URL skills,
     # so it stays unquoted here on purpose.
