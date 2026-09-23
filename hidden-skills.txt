@@ -48,3 +48,9 @@ ask-sonner
 mobile-native
 full-output-enforcement
 find-skills
+
+# --- rarely used, no visible skill hands work to them ---
+# (paseo-help stays visible: the paseo skill names it)
+paseo-plugin
+wizard
+write-swift
