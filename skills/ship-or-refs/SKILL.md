@@ -23,6 +23,20 @@ All true, and a ticket is ready to close, say it as one sentence:
 Ship and close #42.
 ```
 
+## When the work is already committed
+
+Some agents commit as they go. Run `git status --porcelain`: when it prints nothing and `git log --oneline @{push}..HEAD` (or `origin/main..HEAD`) prints commits, `/ship` pushes those commits and writes no commit message at all. Neither `refs` nor `closes` has a subject to land on, so the ticket will not shut by itself.
+
+Say `/ship` on its own then, and name the ticket as mine to close:
+
+```
+### Next
+
+/ship, then close #42 yourself, the work is already committed so ship writes no closing reference.
+```
+
+If the ticket is not ready, the sentence is the same minus the close, with what is still open named.
+
 ## When it is not ready
 
 If any of the three fails, do not say close. Say `/ship refs`, which references the issue without closing it, and name what is still open in the same sentence:
