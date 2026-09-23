@@ -190,15 +190,6 @@
       "installedAt": "2026-09-17T17:45:31.174Z",
       "updatedAt": "2026-09-17T17:45:31.174Z"
     },
-    "unslop": {
-      "source": "backnotprop/pstack",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/backnotprop/pstack.git",
-      "skillPath": "skills/unslop/SKILL.md",
-      "skillFolderHash": "e19dcc9c531f4609df38bc86c62cf0e8b6d8f444",
-      "installedAt": "2026-09-19T06:07:39.664Z",
-      "updatedAt": "2026-09-19T06:07:39.664Z"
-    },
     "brandkit": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
@@ -324,6 +315,15 @@
       "skillFolderHash": "a92e36f28d741aee4ff77d1a001300d7e86e07fe",
       "installedAt": "2026-09-22T18:46:31.613Z",
       "updatedAt": "2026-09-22T18:46:31.613Z"
+    },
+    "unslop": {
+      "source": "cursor/plugins",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/cursor/plugins.git",
+      "skillPath": "pstack/skills/unslop/SKILL.md",
+      "skillFolderHash": "d5baa969e71c4ddb563412b0ec170fa3b05b6d6e",
+      "installedAt": "2026-09-23T02:25:48.309Z",
+      "updatedAt": "2026-09-23T02:26:00.654Z"
     }
   },
   "dismissed": {
