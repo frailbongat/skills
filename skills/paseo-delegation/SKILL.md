@@ -13,6 +13,7 @@ Read the **paseo** skill for the tool details. The profiles are already set up, 
 - Implementation goes to `worker`. One writer per task, in a worktree workspace when tasks run side by side.
 - Every diff, plan, or PR gets a fresh `reviewer` before I see it.
 - A decision that feels risky gets `oracle` before you act on it.
+- Security audits, vulnerability hunts, and pen-test requests go to `security-auditor`.
 - Anything else that is well specified goes to `delegate`.
 
 ## Running them

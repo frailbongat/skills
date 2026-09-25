@@ -1,0 +1,113 @@
+{
+  "agentProfiles": [
+    {
+      "color": "sky",
+      "icon": "search",
+      "id": "scout",
+      "model": "cliproxyapi/claude-sonnet-5",
+      "name": "Scout",
+      "notes": "Fast local codebase recon before you understand the code. Returns relevant files with line ranges, entry points, key types, data flow, risks, and where to start. Read-only: it should not edit anything. Use it before planning or implementing in unfamiliar code. Optimized for speed (Sonnet 5, low thinking).\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/scout.md.\"",
+      "provider": "pi",
+      "thinkingOptionId": "low"
+    },
+    {
+      "color": "teal",
+      "icon": "globe",
+      "id": "researcher",
+      "model": "cliproxyapi/claude-sonnet-5",
+      "name": "Researcher",
+      "notes": "Web/docs research with sources: official docs, specs, benchmarks, recent changes. Returns a concise brief that labels direct evidence vs interpretation vs inference, plus contradictions and missing evidence. Use before you trust external facts. Requires a Pi with web access (pi-web-access: web_search, fetch_content, get_search_content, source_check).\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/researcher.md.\"",
+      "provider": "pi",
+      "thinkingOptionId": "medium"
+    },
+    {
+      "color": "amber",
+      "icon": "microscope",
+      "id": "evidence-auditor",
+      "model": "cliproxyapi/claude-opus-5-5",
+      "name": "Evidence Auditor",
+      "notes": "Independent audit of whether the decision-critical claims in an existing research brief are actually supported by their sources. Does not redo the research and does not treat a citation as proof. Use before relying on important research, and launch it as a different agent than the one that produced the brief. Requires Pi web access. High reasoning on Opus 5.5.\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/evidence-auditor.md.\"",
+      "provider": "pi",
+      "thinkingOptionId": "high"
+    },
+    {
+      "color": "emerald",
+      "icon": "hammer",
+      "id": "worker",
+      "model": "cliproxyapi/claude-opus-5-5",
+      "name": "Worker",
+      "notes": "Implementation work, including approved plan/oracle handoffs. Edits files, follows existing patterns, makes the smallest correct change, validates, and escalates unapproved product or architecture decisions instead of guessing. Use it as the single writer thread for a task. Pair it with an isolated worktree workspace for parallel work. Opus 5.5 at high reasoning, the one profile whose long-horizon agentic coding earns the frontier model.\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/worker.md.\"",
+      "provider": "pi",
+      "thinkingOptionId": "high"
+    },
+    {
+      "color": "violet",
+      "icon": "eye",
+      "id": "reviewer",
+      "model": "cliproxyapi/claude-opus-5-5",
+      "name": "Reviewer",
+      "notes": "Independent review of a diff, plan, proposed solution, PR/issue, or overall codebase health. Read-only: reports evidence-backed P0/P1/P2 findings and a BLOCK / OK / OK-with-notes merge verdict, and says 'No issues found.' when nothing qualifies. Launch it fresh (separate agent from the implementer), and run several in parallel for correctness, tests, and unnecessary complexity.\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/reviewer.md.\"",
+      "provider": "pi",
+      "thinkingOptionId": "high"
+    },
+    {
+      "color": "indigo",
+      "icon": "brain",
+      "id": "oracle",
+      "model": "cliproxyapi/claude-opus-5-5",
+      "name": "Oracle",
+      "notes": "A second opinion before acting, when the decision itself feels risky. Challenges assumptions, reconstructs the inherited decisions and constraints, catches drift and contradictions, and recommends the safest next move. Never edits files. Give it the full context of the decision. Highest reasoning setting (Opus 5.5, xhigh).\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/oracle.md.\"",
+      "provider": "pi",
+      "thinkingOptionId": "xhigh"
+    },
+    {
+      "color": "blue",
+      "icon": "boxes",
+      "id": "delegate",
+      "model": "cliproxyapi/claude-opus-5-5",
+      "name": "Delegate",
+      "notes": "Lightweight general delegate that behaves close to the parent session, with no specialist role constraints. Use when the work does not fit scout/researcher/worker/reviewer/oracle and you just want a capable agent to carry out a well-specified task.\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/delegate.md.\"",
+      "provider": "pi",
+      "thinkingOptionId": "medium"
+    },
+    {
+      "color": "red",
+      "icon": "shield",
+      "id": "security-auditor",
+      "model": "cliproxyapi/claude-opus-5-5",
+      "name": "Security Auditor",
+      "notes": "Parent orchestrator for a security audit, vulnerability hunt, or pen-test request on one codebase. Runs the hidden security-audit skill: plans coverage, launches its own scout, delegate, and reviewer sub-agents, and writes the run files. Source-only, defaults to the quick profile with 25 agent invocations, and writes to ~/security-audit-skill/<repo>/run-<N>. Returns a short summary and the path to REPORT.md. Not for general code or PR review, use reviewer. Opus 5.5 at high reasoning.\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/security-auditor.md.\"",
+      "provider": "pi",
+      "thinkingOptionId": "high"
+    }
+  ],
+  "terminalProfiles": [
+    {
+      "args": [
+        "{{{prompt}}}"
+      ],
+      "command": "pi",
+      "icon": "pi",
+      "id": "pi",
+      "name": "Pi"
+    },
+    {
+      "args": [
+        "{{{prompt}}}"
+      ],
+      "command": "claude",
+      "icon": "claude",
+      "id": "claude",
+      "name": "Claude Code"
+    },
+    {
+      "args": [
+        "{{{prompt}}}"
+      ],
+      "command": "codex",
+      "icon": "codex",
+      "id": "codex",
+      "name": "Codex"
+    }
+  ]
+}

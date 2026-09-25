@@ -62,3 +62,10 @@ paseo-handoff
 paseo-plugin
 wizard
 write-swift
+
+# --- vendored and patched, in vendor/ ---
+# Cloudflare's security-audit, copied from commit c1c8a8c and patched for pi
+# and Paseo. It lives in vendor/security-audit and install.sh links it like
+# the skills in skills/. Start it through the `security-auditor` Paseo
+# profile or `/skill:security-audit`.
+security-audit

@@ -3,11 +3,16 @@
 #
 #   1. installs the third-party skills recorded in reference-skill-lock.json,
 #      the same set listed in the README table
-#   2. runs install.sh to symlink the skills written in this repo
+#   2. runs install.sh to symlink the skills in this repo, the ones I wrote in
+#      skills/ and the patched third-party ones in vendor/
 #   3. runs hide-skills.sh to hide the skills in hidden-skills.txt from the
 #      system prompt, so a fresh machine gets the same trimmed context
+#   4. runs paseo/paseo.sh apply to write the Paseo agent and terminal
+#      profiles into ~/.paseo/config.json and link the role briefs. Paseo
+#      creates that file the first time it opens, so without it this step
+#      skips and says to run it by hand later.
 #
-# Safe to re-run. Pass --skip-managed to only run steps 2 and 3.
+# Safe to re-run. Pass --skip-managed to only run steps 2 to 4.
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -42,6 +47,13 @@ fi
 
 echo
 "$REPO_DIR/hide-skills.sh"
+
+echo
+if [[ -f "${PASEO_HOME:-$HOME/.paseo}/config.json" ]]; then
+  "$REPO_DIR/paseo/paseo.sh" apply
+else
+  echo "skip  Paseo profiles (no ~/.paseo/config.json). Open Paseo once, then run paseo/paseo.sh apply."
+fi
 
 cat <<'EOF'
 
