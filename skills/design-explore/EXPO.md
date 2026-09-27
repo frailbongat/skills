@@ -18,6 +18,10 @@ Expo apps on Expo Router.
 
 In a dev build, open the screen, then use the pill at the right edge above the tab bar. A tap opens a bottom sheet, and a tap on a variant picks it. The pick survives a reload when the project uses AsyncStorage, and resets to `current` otherwise. A screen presented as a native modal covers the pill, so close it to switch. Release builds show `current`, or the first variant for a new target.
 
+## Capturing a variant
+
+The switcher shows the first key in `variants` when nothing is picked, so capture one variant at a time by moving its key to the top of the target's `_variants/index.tsx`. Reload the app on a booted Simulator, open the screen, and capture it with `xcrun simctl io booted screenshot <file>`. After the last capture, restore the file with `git checkout -- <variants-dir>/index.tsx`.
+
 ## Variants on this platform
 
 - Motion runs on Reanimated when the project depends on `react-native-reanimated`, and on React Native's `Animated` otherwise. Honor the reduce motion setting through Reanimated's `useReducedMotion` or `AccessibilityInfo.isReduceMotionEnabled()`.

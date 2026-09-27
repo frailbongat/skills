@@ -111,11 +111,21 @@ Launch one `worker` per chosen skill, all at once, each with the variant brief. 
 
 Done when every worker has reported back and every planned variant file exists.
 
-### 6. Check, commit, hand over
+### 6. Check and commit
 
 1. Import every finished variant into `index.tsx` and add it to `variants` after `current`, in the table's skill order. Bring `variantIds` in `state.json` up to date.
 2. Run the typecheck. Fix wiring errors yourself. Send a variant's errors back to its worker with `send_agent_prompt` and wait for the fix.
 3. Make the one explore commit on the current branch with `git add -A && git commit -m "explore: <slug> variants"`.
-4. Tell the user how to switch, using the platform file's section for it, and how to lock: `/skill:design-explore lock <variant-id> [steal notes]`.
 
-Done when the typecheck exits 0, `git status --porcelain` prints nothing, and the user has both instructions.
+Done when the typecheck exits 0 and `git status --porcelain` prints nothing.
+
+### 7. Pick and hand over
+
+The user chooses the winner, and your **pick** is the recommendation they read first. Base it on the rendered UI, since code hides the spacing, hierarchy, and overflow a screenshot shows.
+
+1. Screenshot `current` and every variant as the platform file's "Capturing a variant" section says. Save the files in `/tmp/design-explore/<slug>/`, outside the repo, and open every one with `read`. When the app will not run, ask the user to start it and wait.
+2. Read each variant's motion code, since a screenshot shows no motion.
+3. Pick the variant that best does what the `## Target` section of `brief.md` asks, inside the brand lock. Then list the **steals**, specific parts of other variants worth moving into the pick, such as a header, an empty state, or an entrance animation, each named with its variant id.
+4. Tell the user how to switch, using the platform file's section for it. Then give the pick with a reason of two lines or fewer, the steals, and the lock command with both filled in, such as `/skill:design-explore lock taste-2 use the header motion from emil-1`.
+
+Done when you have opened a screenshot of every id in `variantIds`, `git status --porcelain` prints nothing, and the user has the switch instructions, the pick, the steals, and the filled lock command.

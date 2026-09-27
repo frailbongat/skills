@@ -23,6 +23,10 @@ The target's `_variants/index.tsx` starts with `"use client"`, so every variant 
 
 Run the dev server as usual, open the screen, then use the pill at the bottom right to pick a variant. The URL carries the pick as `?variant=taste-2`, so a link or a second tab opens the same variant. With two explorations running, each gets its own `?variant=<slug>:<variant-id>`. Production builds show `current`, or the first variant for a new target.
 
+## Capturing a variant
+
+Start the dev server in the background when none is running. Open the page that renders the target with `?variant=<slug>:<variant-id>`, and screenshot it at a desktop and a mobile width. Use the harness's browser tool when it has one, or `npx playwright screenshot --viewport-size "1440, 900" --wait-for-timeout 1500 --full-page <url> <file>` and again with `"390, 844"`. The wait lets entrance motion settle before the capture.
+
 ## Variants on this platform
 
 On Next.js a variant is a client component. It can use state and effects, and it is never `async`.
