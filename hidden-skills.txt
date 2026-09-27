@@ -69,3 +69,9 @@ write-swift
 # the skills in skills/. Start it through the `security-auditor` Paseo
 # profile or `/skill:security-audit`.
 security-audit
+
+# --- mine, in skills/ ---
+# design-explore sets the field in its own SKILL.md, so hide-skills.sh finds it
+# already hidden. It is listed so this file stays the full list. Start it with
+# `/skill:design-explore`.
+design-explore
