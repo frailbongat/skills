@@ -26,7 +26,7 @@ Done when every finding is fixed or the user accepted it, and `git status --porc
 
 ### 4. Hand over
 
-Tell the user the lock commit's sha, and how to read any losing variant from the explore commit: `git show <explore-commit>:<variantsDir>/<variant-id>.tsx`.
+Tell the user the lock commit's sha, and how to read any losing variant, the mix included, from the commit before it: `git show <lock-commit>^:<variantsDir>/<variant-id>.tsx`.
 
 Done when the user has that command with the real sha and path filled in.
 

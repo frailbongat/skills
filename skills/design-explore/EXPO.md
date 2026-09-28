@@ -20,7 +20,7 @@ In a dev build, open the screen, then use the pill at the right edge above the t
 
 ## Capturing a variant
 
-The switcher shows the first key in `variants` when nothing is picked, so capture one variant at a time by moving its key to the top of the target's `_variants/index.tsx`. Reload the app on a booted Simulator, open the screen, and capture it with `xcrun simctl io booted screenshot <file>`. After the last capture, restore the file with `git checkout -- <variants-dir>/index.tsx`.
+The switcher shows the first key in `variants` when nothing is picked, so capture one variant at a time by moving its key to the top of the target's `_variants/index.tsx`. Reload the app on a booted Simulator, open the screen, and capture it with `xcrun simctl io booted screenshot <file>`. After the last capture, put the keys back in the order they had.
 
 ## Variants on this platform
 

@@ -6,11 +6,12 @@ disable-model-invocation: true
 
 # Design explore
 
-An **exploration** builds several **variants** of one **target**, a screen or a component, and renders them in the target's real spot in the app. A dev-only switcher flips between them. Production builds made before lock bundle every variant but render only the first. Lock mode later keeps the winner and deletes the rest. Both modes work on the branch that is checked out, and each makes one commit.
+An **exploration** builds several **variants** of one **target**, a screen or a component, and renders them in the target's real spot in the app. A dev-only switcher flips between them. Production builds made before lock bundle every variant but render only the first. Mix mode builds one more variant, `mix`, from parts of the others. Lock mode later keeps the winner and deletes the rest. Every mode works on the branch that is checked out, and each makes one commit.
 
 The first argument picks the mode:
 
 - `/skill:design-explore <target and options, in plain English>` explores. Follow the steps below. The target is any screen or component, for example `the account screen` or `the pricing card on the home page`. Read two options from the user's words: **per-skill**, 1 or 2 variants per skill (a total sets it as total divided by the number of skills, so "4 variants" with all four skills means 1), and **skills**, which design skills run ("skip awwwards" drops it). When the words leave the count unclear, such as a total that is not 1 or 2 times the number of skills, ask before step 2.
+- `/skill:design-explore mix <notes>` mixes, and so do notes the user sends after step 7 on what they like in each variant. Read [MIX.md](MIX.md) and follow it instead.
 - `/skill:design-explore lock <variant-id> [steal notes]` locks, for example `lock taste-2 use the header motion from emil-1`. Read [LOCK.md](LOCK.md) and follow it instead.
 
 ## Words
@@ -19,7 +20,7 @@ The first argument picks the mode:
 - **Owner.** The file that renders the target. It keeps the data, hooks, and navigation.
 - **View.** Pure UI in its own file, props in and UI out. Its exported props type, `<Name>ViewProps`, is the **props contract** every variant implements. The owner and view stay split after lock.
 - **Incumbent.** The view as it looks today, listed first in the switcher as `current`. A new target has none.
-- **Variant.** One design of the view, with id `<skill>-1` or `<skill>-2`. `-1` is **safe**, close to the current screens. `-2` is **bold**, pushing layout, hierarchy, and motion further. With per-skill 1, each skill builds only its `-1`.
+- **Variant.** One design of the view, with id `<skill>-1` or `<skill>-2`. `-1` is **safe**, close to the current screens. `-2` is **bold**, pushing layout, hierarchy, and motion further. With per-skill 1, each skill builds only its `-1`. The **mix** is the variant with id `mix`, built from the parts of other variants that the user's notes name.
 - **Brand lock.** Every variant keeps the project's colors, fonts, logo, and tokens. Layout, hierarchy, spacing, and motion are free.
 - **Look-only.** A variant takes the props contract as it is, fetches no data, holds only local UI state, and adds no dependency.
 - **`_variants/`.** The one folder name for every exploration file, so cleanup greps for one name. The **shared folder** at the source root holds the switcher and `state.json`. Each target has its own `_variants/` beside its view.
@@ -126,6 +127,6 @@ The user chooses the winner, and your **pick** is the recommendation they read f
 1. Screenshot `current` and every variant as the platform file's "Capturing a variant" section says. Save the files in `/tmp/design-explore/<slug>/`, outside the repo, and open every one with `read`. When the app will not run, ask the user to start it and wait.
 2. Read each variant's motion code, since a screenshot shows no motion.
 3. Pick the variant that best does what the `## Target` section of `brief.md` asks, inside the brand lock. Then list the **steals**, specific parts of other variants worth moving into the pick, such as a header, an empty state, or an entrance animation, each named with its variant id.
-4. Tell the user how to switch, using the platform file's section for it. Then give the pick with a reason of two lines or fewer, the steals, and the lock command with both filled in, such as `/skill:design-explore lock taste-2 use the header motion from emil-1`.
+4. Tell the user how to switch, using the platform file's section for it. Then give the pick with a reason of two lines or fewer, the steals, and the lock command with both filled in, such as `/skill:design-explore lock taste-2 use the header motion from emil-1`. Add that they can reply with what they like in each variant to get a mix.
 
 Done when you have opened a screenshot of every id in `variantIds`, `git status --porcelain` prints nothing, and the user has the switch instructions, the pick, the steals, and the filled lock command.
