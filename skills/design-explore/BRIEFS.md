@@ -1,14 +1,14 @@
 # Explore briefs
 
-Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.pi/agent/skills/design-explore`. `<Name>` is the view's component name without `View`, such as `Profile`.
+Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.pi/agent/skills/design-explore`. `<platform-file>` is WEB.md, EXPO.md, or ASTRO.md, the one for this project. `<ext>` is `astro` on Astro and `tsx` everywhere else. `<Name>` is the view's component name without `View`, such as `Profile`.
 
 ## Scout brief
 
 ```
 Scout a design exploration of <target> in <repo-path>. Write one file, brief.md, and report back. Every other file stays as it is.
 
-1. Platform. From package.json, the platform is `expo` when expo-router is a dependency, `next` when next is a dependency and the project has an `app/` or `src/app/` folder, and `vite` for plain React on Vite. For anything else, stop and report what you found.
-2. Placement. Find the file that renders <target> today, or report that the target is new. Read the "Where files go" and "Switcher" sections of <skill-dir>/WEB.md for next or vite, or <skill-dir>/EXPO.md for expo. Following them, name the owner file, the view file, the target's `_variants/` folder, the source root, and the root layout file. Find the typecheck and lint commands in package.json.
+1. Platform. From package.json, the platform is `expo` when expo-router is a dependency, `next` when next is a dependency and the project has an `app/` or `src/app/` folder, `astro` when astro is a dependency, and `vite` for plain React on Vite. For anything else, stop and report what you found.
+2. Placement. Find the file that renders <target> today, or report that the target is new. Read the "Where files go" and "Switcher" sections of <skill-dir>/WEB.md for next or vite, <skill-dir>/EXPO.md for expo, or <skill-dir>/ASTRO.md for astro. Following them, name the owner file, the view file, the target's `_variants/` folder, the source root, and the root layout file. Find the typecheck and lint commands in package.json.
 3. Brief. Write `brief.md` in the target's `_variants/` folder with these five sections:
    - `## Target` says what it is, where it renders, what it must show and do, and the data it gets today.
    - `## Brand lock` lists every color, font, logo file, and spacing, radius, and motion token, each with its value and the file it lives in.
@@ -33,12 +33,12 @@ Read first:
 - <variants-dir>/brief.md. It holds all the design context. Take every answer from it, because the user is not available for questions.
 - <skill-md-path>. Bring its taste and craft rules. Where it conflicts with this brief, this brief wins.
 - <view-file>, for the props contract `<Name>ViewProps` and, when the view already has UI, the incumbent design.
-- The "Variants on this platform" section of <skill-dir>/<WEB.md or EXPO.md>.
+- The "Variants on this platform" section of <skill-dir>/<platform-file>.
 
 What to build:
 - `<skill>-1` is safe. It stays close to the current screens in the brief, with better craft.
 - `<skill>-2` is bold. It pushes layout, hierarchy, and motion as far as the skill's taste goes.
-- Each variant is one file, `<variants-dir>/<variant-id>.tsx`, with a default export that takes `<Name>ViewProps`. Helper parts go in the same file or in files named `<variant-id>.<part>.tsx`.
+- Each variant is one file, `<variants-dir>/<variant-id>.<ext>`, with a default-exported component whose props are `<Name>ViewProps`. Helper parts go in the same file or in files named `<variant-id>.<part>.<ext>`.
 - The scope is the target alone. A component variant is that component, not a page around it.
 
 Rules:
@@ -47,7 +47,7 @@ Rules:
 - When the skill calls for a library the project lacks, get the same effect with what the project has.
 - Your checks are the ones below, in place of the design skill's build, screenshot, and handoff steps.
 
-Done when every file for <ids> exists, `<typecheck-command>` shows no errors in your files, and your files import only React, the platform, existing project modules, and existing dependencies.
+Done when every file for <ids> exists, `<typecheck-command>` shows no errors in your files, and your files import only the UI framework, the platform, existing project modules, and existing dependencies.
 
 Report: each variant id, its direction in one line, and what it changes from the incumbent.
 ```

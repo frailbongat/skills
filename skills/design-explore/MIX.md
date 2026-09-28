@@ -1,6 +1,6 @@
 # Mix
 
-Mix builds one new variant from the parts of other variants that the user's notes name, and makes the parts work as one design. One `worker` builds it. The words target, view, variant, mix, brand lock, look-only, pick, and steals mean what [SKILL.md](SKILL.md) says. Launch the subagent as the `paseo-delegation` skill says.
+Mix builds one new variant from the parts of other variants that the user's notes name, and makes the parts work as one design. One `worker` builds it. The words target, view, variant, mix, brand lock, look-only, pick, steals, and `<ext>` mean what [SKILL.md](SKILL.md) says. Launch the subagent as the `paseo-delegation` skill says.
 
 ## Steps
 
@@ -36,7 +36,7 @@ Done when the worker reports back and its screenshot of the mix exists.
 ### 4. Check and commit
 
 1. Run the typecheck. Send the mix's errors back to the worker with `send_agent_prompt` and wait for the fix.
-2. Confirm that `index.tsx` imports the mix and lists it last in `variants`, and that `variantIds` in `state.json` ends with `mix`.
+2. Confirm that `index.<ext>` imports the mix and lists it last, and that `variantIds` in `state.json` ends with `mix`.
 3. Make the one mix commit with `git add -A && git commit -m "explore: <slug> mix"`.
 
 Done when the typecheck exits 0 and `git status --porcelain` prints nothing.
@@ -55,7 +55,7 @@ Done when the user has every part of that list.
 
 ## Mix brief
 
-Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.pi/agent/skills/design-explore`. `<Name>` is the view's component name without `View`.
+Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.pi/agent/skills/design-explore`. `<platform-file>` is WEB.md, EXPO.md, or ASTRO.md, the one for this project. `<Name>` is the view's component name without `View`.
 
 ```
 Build the `mix` variant of <target> in <repo-path>, with the <skill> design skill. A mix takes the parts named in the mix list below from existing variants and makes them one design, as if one designer drew the whole screen.
@@ -67,21 +67,21 @@ Read first:
 - <variants-dir>/brief.md. It holds all the design context. Take every answer from it, because the user is not available for questions.
 - <skill-md-path>. Bring its taste and craft rules. Where it conflicts with this brief, this brief wins.
 - <view-file>, for the props contract `<Name>ViewProps`.
-- <variants-dir>/<variant-id>.tsx and its `<variant-id>.*` helper files, for every variant the mix list names.
-- The "Capturing a variant" and "Variants on this platform" sections of <skill-dir>/<WEB.md or EXPO.md>.
+- <variants-dir>/<variant-id>.<ext> and its `<variant-id>.*` helper files, for every variant the mix list names.
+- The "Capturing a variant" and "Variants on this platform" sections of <skill-dir>/<platform-file>.
 
 Steps:
 1. Decide. For each decide item, capture both candidates as the platform file says, open the screenshots with read, and choose the one that sits better with the rest of the list. Save screenshots in /tmp/design-explore/<slug>/.
-2. Build. Write `<variants-dir>/mix.tsx` with a default export that takes `<Name>ViewProps`. When it already exists, revise it, keeping every part the list leaves alone. Helper parts go in the same file or in files named `mix.<part>.tsx`. Port each part from its source variant, with the change its item asks. Then make the parts fit: one spacing scale, one type scale, one radius, and one motion style across the screen. Restyle a borrowed part where it clashes, and keep the quality the user named in each note, such as a numpad with no background.
-3. Wire. When <variants-dir>/index.tsx does not list the mix yet, import it and add it last in `variants`, and add `mix` to the end of `variantIds` for <slug> in <state-json>.
+2. Build. Write `<variants-dir>/mix.<ext>` with a default-exported component whose props are `<Name>ViewProps`. When it already exists, revise it, keeping every part the list leaves alone. Helper parts go in the same file or in files named `mix.<part>.<ext>`. Port each part from its source variant, with the change its item asks. Then make the parts fit: one spacing scale, one type scale, one radius, and one motion style across the screen. Restyle a borrowed part where it clashes, and keep the quality the user named in each note, such as a numpad with no background.
+3. Wire. When <variants-dir>/index.<ext> does not list the mix yet, import it and add it last, the way the other variants are listed, and add `mix` to the end of `variantIds` for <slug> in <state-json>.
 4. Look. Capture the mix and open the screenshot with read. Compare each part with its source screenshot, fix every clash, overflow, and misalignment in one batch, then capture and look once more.
 
 Rules:
 - Keep the brand lock. Use only the colors, fonts, logo, and tokens in brief.md.
 - Stay look-only. Take the props as they are, fetch no data, keep only local UI state, import only dependencies already in package.json, and use only assets already in the project.
-- Write only the `mix` files, index.tsx, and state.json. Every other variant stays as it is.
+- Write only the `mix` files, index.<ext>, and state.json. Every other variant stays as it is.
 
-Done when every item is in the mix or reported as not fitting, `<typecheck-command>` shows no errors in your files, index.tsx and state.json list `mix` last, and you opened the final screenshot.
+Done when every item is in the mix or reported as not fitting, `<typecheck-command>` shows no errors in your files, index.<ext> and state.json list `mix` last, and you opened the final screenshot.
 
 Report: for each item, where it landed or why it did not fit, each decide item's choice with a one-line reason, and the path of the final screenshot.
 ```

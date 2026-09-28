@@ -1,0 +1,118 @@
+---
+// Dev-only design switcher, copied in by the design-explore skill.
+// `/skill:design-explore lock` deletes this folder once no exploration is left.
+//
+// It lists every <Explore> on the page. A pick rewrites `?variant=` and
+// reloads, so the new variant's scripts and entrance motion run the way they
+// do on a first visit. The script is inline, so production builds ship none of it.
+
+const IS_DEV = import.meta.env.DEV;
+---
+
+{
+  IS_DEV && (
+    <script is:inline>
+      (() => {
+        const PARAM = "variant";
+        const explorations = [...document.querySelectorAll("[data-explore]")].map((element) => ({
+          target: element.getAttribute("data-explore"),
+          ids: (element.getAttribute("data-explore-ids") ?? "").split(" ").filter(Boolean),
+        }));
+        if (explorations.length === 0) return;
+
+        const params = new URLSearchParams(location.search);
+        const picks = {};
+        for (const value of params.getAll(PARAM)) {
+          const colon = value.indexOf(":");
+          if (colon === -1) picks["*"] ??= value;
+          else picks[value.slice(0, colon)] = value.slice(colon + 1);
+        }
+        const resolve = (exploration) => {
+          const wanted = picks[exploration.target] ?? picks["*"];
+          return exploration.ids.includes(wanted) ? wanted : exploration.ids[0];
+        };
+
+        const go = (target, id) => {
+          picks[target] = id;
+          const next = new URLSearchParams(location.search);
+          next.delete(PARAM);
+          const scoped = explorations.length > 1;
+          for (const exploration of explorations) {
+            const chosen = resolve(exploration);
+            if (chosen === exploration.ids[0]) continue;
+            next.append(PARAM, scoped ? `${exploration.target}:${chosen}` : chosen);
+          }
+          const query = next.toString();
+          location.assign(`${location.pathname}${query ? `?${query}` : ""}${location.hash}`);
+        };
+
+        // Neutral chrome on purpose: the switcher is a tool, not part of the design.
+        const font = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
+        const make = (tag, css, text) => {
+          const element = document.createElement(tag);
+          element.style.cssText = css;
+          if (text !== undefined) element.textContent = text;
+          return element;
+        };
+
+        const root = make(
+          "div",
+          "position:fixed;right:16px;bottom:16px;z-index:2147483647;display:flex;flex-direction:column;align-items:flex-end;gap:8px",
+        );
+        const panel = make(
+          "div",
+          "display:none;width:240px;max-height:60vh;overflow-y:auto;padding:6px;border-radius:12px;background:#171717;box-shadow:0 8px 30px rgba(0,0,0,.35)",
+        );
+        panel.setAttribute("role", "dialog");
+        panel.setAttribute("aria-label", "Design variants");
+
+        for (const exploration of explorations) {
+          const chosen = resolve(exploration);
+          const group = make("div", "padding:4px 0");
+          group.setAttribute("role", "group");
+          group.setAttribute("aria-label", exploration.target);
+          group.append(
+            make(
+              "div",
+              `padding:4px 10px;color:#a3a3a3;font:600 11px/1.3 ${font};letter-spacing:.04em;text-transform:uppercase`,
+              exploration.target,
+            ),
+          );
+          for (const id of exploration.ids) {
+            const active = id === chosen;
+            const option = make(
+              "button",
+              `display:block;width:100%;padding:6px 10px;border:0;border-radius:8px;background:${active ? "#404040" : "transparent"};color:${active ? "#fff" : "#e5e5e5"};font:500 13px/1.3 ${font};text-align:left;cursor:pointer`,
+              id,
+            );
+            option.type = "button";
+            option.setAttribute("aria-pressed", String(active));
+            option.addEventListener("click", () => go(exploration.target, id));
+            group.append(option);
+          }
+          panel.append(group);
+        }
+
+        const only = explorations.length === 1 ? explorations[0] : undefined;
+        const pill = make(
+          "button",
+          `padding:8px 14px;border:0;border-radius:999px;background:#171717;color:#fff;font:600 13px/1 ${font};box-shadow:0 4px 16px rgba(0,0,0,.3);cursor:pointer`,
+          only ? `${only.target}: ${resolve(only)}` : `${explorations.length} explorations`,
+        );
+        pill.type = "button";
+        pill.setAttribute("aria-expanded", "false");
+        const setOpen = (open) => {
+          panel.style.display = open ? "block" : "none";
+          pill.setAttribute("aria-expanded", String(open));
+        };
+        pill.addEventListener("click", () => setOpen(panel.style.display === "none"));
+        addEventListener("keydown", (event) => {
+          if (event.key === "Escape") setOpen(false);
+        });
+
+        root.append(panel, pill);
+        document.body.append(root);
+      })();
+    </script>
+  )
+}

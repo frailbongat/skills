@@ -1,0 +1,62 @@
+---
+// Dev-only variant host, copied in by the design-explore skill.
+// `/skill:design-explore lock` deletes this folder once no exploration is left.
+//
+// Each variant arrives in a slot named after its id. Astro drops the query
+// string on prerendered pages, so the server cannot see `?variant=`. In dev
+// this renders every slot, each in a `display: contents` wrapper, and an
+// inline script that runs before the wrappers parse reads the URL and hides
+// every variant but the pick, so the page never flashes the wrong one. Without
+// the script, the inline styles show the first variant. Outside dev it renders
+// only the first slot, with no wrapper, and the other variants never render.
+
+interface Props {
+  /** The exploration's slug, as in state.json. */
+  target: string;
+  /** Variant ids in switcher order. The first is the default. */
+  ids: readonly string[];
+}
+
+const { target, ids } = Astro.props;
+const firstId = ids[0];
+if (firstId === undefined) {
+  throw new Error(`<Explore target="${target}"> needs at least one variant.`);
+}
+const IS_DEV = import.meta.env.DEV;
+---
+
+{
+  IS_DEV ? (
+    <>
+      <script is:inline define:vars={{ target, ids }}>
+        // `?variant=taste-2` picks for every exploration that has a `taste-2`.
+        // `?variant=hero:taste-2` picks for one exploration only.
+        let wanted;
+        for (const value of new URLSearchParams(location.search).getAll("variant")) {
+          const colon = value.indexOf(":");
+          if (colon === -1) wanted ??= value;
+          else if (value.slice(0, colon) === target) wanted = value.slice(colon + 1);
+        }
+        const chosen = ids.includes(wanted) ? wanted : ids[0];
+        const scope = `[data-explore=${JSON.stringify(target)}]`;
+        const style = document.createElement("style");
+        style.textContent =
+          `${scope} > [data-explore-variant] { display: none !important; }\n` +
+          `${scope} > [data-explore-variant=${JSON.stringify(chosen)}] { display: contents !important; }`;
+        document.head.append(style);
+      </script>
+      <div data-explore={target} data-explore-ids={ids.join(" ")} style="display: contents">
+        {ids.map((id) => (
+          <div
+            data-explore-variant={id}
+            style={id === firstId ? "display: contents" : "display: none"}
+          >
+            <slot name={id} />
+          </div>
+        ))}
+      </div>
+    </>
+  ) : (
+    <slot name={firstId} />
+  )
+}
