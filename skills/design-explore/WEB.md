@@ -21,7 +21,7 @@ The target's `_variants/index.tsx` starts with `"use client"`, so every variant 
 
 ## Telling the user how to switch
 
-Run the dev server as usual, open the screen, then use the pill at the bottom right to pick a variant. The URL carries the pick as `?variant=taste-2`, so a link or a second tab opens the same variant. With two explorations running, each gets its own `?variant=<slug>:<variant-id>`. Production builds show `current`, or the first variant for a new target.
+Run the dev server as usual, open the screen, then click a variant in the switcher bar. The bar sits at the bottom center, or runs down the bottom right when the window is too narrow for a row. `[` and `]` step to the previous and next variant. The URL carries the pick as `?variant=taste-2`, so a link or a second tab opens the same variant. With two explorations running, each gets its own `?variant=<slug>:<variant-id>`. Production builds show `current`, or the first variant for a new target.
 
 ## Capturing a variant
 

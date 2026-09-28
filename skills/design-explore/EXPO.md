@@ -16,7 +16,7 @@ Expo apps on Expo Router.
 
 ## Telling the user how to switch
 
-In a dev build, open the screen, then use the pill at the right edge above the tab bar. A tap opens a bottom sheet, and a tap on a variant picks it. The pick survives a reload when the project uses AsyncStorage, and resets to `current` otherwise. A screen presented as a native modal covers the pill, so close it to switch. Release builds show `current`, or the first variant for a new target.
+In a dev build, open the screen, then tap a variant in the switcher bar above the tab bar. Swipe the bar sideways when it holds more variants than fit. On Expo web, `[` and `]` step to the previous and next variant. The pick survives a reload when the project uses AsyncStorage, and resets to `current` otherwise. A screen presented as a native modal covers the bar, so close it to switch. Release builds show `current`, or the first variant for a new target.
 
 ## Capturing a variant
 

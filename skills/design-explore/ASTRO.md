@@ -57,7 +57,7 @@ Astro drops the query string on prerendered pages, so the dev server renders eve
 
 ## Telling the user how to switch
 
-Run the dev server as usual, open the page, then use the pill at the bottom right to pick a variant. A pick reloads the page with `?variant=taste-2` in the URL, so the variant's entrance motion plays as on a first visit, and a link or a second tab opens the same variant. With two explorations on one page, each gets its own `?variant=<slug>:<variant-id>`. A page on a layout without the switcher still takes the `?variant=` param. Production builds show `current`, or the first variant for a new target.
+Run the dev server as usual, open the page, then click a variant in the switcher bar. The bar sits at the bottom center, or runs down the bottom right when the window is too narrow for a row. `[` and `]` step to the previous and next variant. A pick reloads the page with `?variant=taste-2` in the URL, so the variant's entrance motion plays as on a first visit, and a link or a second tab opens the same variant. With two explorations on one page, each gets its own `?variant=<slug>:<variant-id>`. A page on a layout without the switcher still takes the `?variant=` param. Production builds show `current`, or the first variant for a new target.
 
 ## Capturing a variant
 

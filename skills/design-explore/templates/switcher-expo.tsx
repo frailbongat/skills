@@ -4,9 +4,14 @@
 // `./storage` is one of two copies: storage-async.ts remembers the pick across
 // reloads when the project already depends on AsyncStorage, storage-memory.ts
 // keeps it for the session only.
+//
+// Every variant is a chip in an always-open bar above the tab bar, so a switch
+// is one tap. Each exploration gets one row that scrolls sideways when its
+// chips overflow. On Expo web, `[` and `]` step to the previous and next
+// variant of the exploration tapped last, or the first one.
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { loadPicks, savePicks, type Picks } from "./storage";
 
 type Exploration = {
@@ -57,6 +62,16 @@ function pick(target: string, variantId: string): void {
   void savePicks(picks);
 }
 
+function step(target: string | undefined, delta: number): void {
+  const exploration =
+    snapshot.explorations.find((candidate) => candidate.target === target) ?? snapshot.explorations[0];
+  if (!exploration) return;
+  const ids = exploration.variantIds;
+  const index = ids.indexOf(resolveVariant(snapshot, exploration));
+  const next = ids[(index + delta + ids.length) % ids.length];
+  if (next !== undefined) pick(exploration.target, next);
+}
+
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   return () => {
@@ -100,126 +115,98 @@ export function useExploreVariant<Variant>(
 /** Mount once in the root layout. Renders nothing outside `__DEV__`. */
 export function ExploreSwitcher() {
   const current = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const [open, setOpen] = useState(false);
+  const [activeTarget, setActiveTarget] = useState<string>();
+
+  useEffect(() => {
+    if (!__DEV__ || Platform.OS !== "web") return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "[" && event.key !== "]") return;
+      if (event.repeat || event.metaKey || event.ctrlKey || event.altKey || event.isComposing) return;
+      const focused = event.target;
+      if (focused instanceof HTMLElement && (focused.isContentEditable || focused.matches("input, textarea, select"))) {
+        return;
+      }
+      event.preventDefault();
+      step(activeTarget, event.key === "]" ? 1 : -1);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activeTarget]);
 
   if (!__DEV__ || current.explorations.length === 0) return null;
 
-  const only = current.explorations.length === 1 ? current.explorations[0] : undefined;
-  const label = only ? resolveVariant(current, only) : `${current.explorations.length} explorations`;
+  const keyed = activeTarget ?? current.explorations[0]?.target;
 
   return (
-    <>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Design variants, showing ${label}`}
-        onPress={() => setOpen(true)}
-        style={({ pressed }) => [styles.pill, pressed && styles.pillPressed]}
-      >
-        <Text style={styles.pillText}>{label}</Text>
-      </Pressable>
-      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-        <View style={styles.sheetLayer}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Close design variants"
-            onPress={() => setOpen(false)}
-            style={styles.backdrop}
-          />
-          <View style={styles.sheet}>
-            <View style={styles.handle} />
-            <ScrollView contentContainerStyle={styles.sheetContent}>
-              {current.explorations.map((exploration) => {
-                const chosen = resolveVariant(current, exploration);
-                return (
-                  <View key={exploration.target} style={styles.group}>
-                    <Text style={styles.groupLabel}>{exploration.target}</Text>
-                    {exploration.variantIds.map((variantId) => {
-                      const selected = variantId === chosen;
-                      return (
-                        <Pressable
-                          key={variantId}
-                          accessibilityRole="button"
-                          accessibilityState={{ selected }}
-                          onPress={() => {
-                            pick(exploration.target, variantId);
-                            setOpen(false);
-                          }}
-                          style={[styles.option, selected && styles.optionSelected]}
-                        >
-                          <Text style={[styles.optionText, selected && styles.optionTextSelected]}>
-                            {variantId}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-    </>
+    <View accessibilityLabel="Design variants" style={styles.bar}>
+      {current.explorations.map((exploration) => {
+        const chosen = resolveVariant(current, exploration);
+        return (
+          <ScrollView
+            key={exploration.target}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.row}
+          >
+            <Text style={[styles.label, exploration.target === keyed && styles.labelKeyed]}>
+              {exploration.target}
+            </Text>
+            {exploration.variantIds.map((variantId) => {
+              const selected = variantId === chosen;
+              return (
+                <Pressable
+                  key={variantId}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => {
+                    setActiveTarget(exploration.target);
+                    pick(exploration.target, variantId);
+                  }}
+                  style={({ pressed }) => [styles.option, selected && styles.optionSelected, pressed && styles.optionPressed]}
+                >
+                  <Text style={[styles.optionText, selected && styles.optionTextSelected]}>{variantId}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        );
+      })}
+    </View>
   );
 }
 
 // Neutral chrome on purpose: the switcher is a tool, not part of the design.
 const styles = StyleSheet.create({
-  pill: {
+  bar: {
     position: "absolute",
+    left: 12,
     right: 12,
     // High enough to clear a bottom tab bar.
     bottom: 112,
     zIndex: 9999,
     elevation: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 999,
+    gap: 2,
+    padding: 4,
+    borderRadius: 14,
     backgroundColor: "#171717",
     shadowColor: "#000000",
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
-  pillPressed: { opacity: 0.8 },
-  pillText: { color: "#ffffff", fontSize: 13, fontWeight: "600" },
-  sheetLayer: { flex: 1, justifyContent: "flex-end" },
-  // Spelled out because StyleSheet.absoluteFill's type differs across React Native versions.
-  backdrop: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.35)",
-  },
-  sheet: {
-    maxHeight: "70%",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    backgroundColor: "#171717",
-  },
-  handle: {
-    alignSelf: "center",
-    width: 36,
-    height: 4,
-    marginTop: 8,
-    borderRadius: 2,
-    backgroundColor: "#525252",
-  },
-  sheetContent: { padding: 12, paddingBottom: 40 },
-  group: { paddingVertical: 6 },
-  groupLabel: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    color: "#a3a3a3",
+  row: { alignItems: "center", gap: 2 },
+  label: {
+    paddingHorizontal: 8,
+    color: "#737373",
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
-  option: { paddingHorizontal: 10, paddingVertical: 12, borderRadius: 10 },
+  labelKeyed: { color: "#a3a3a3" },
+  option: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
   optionSelected: { backgroundColor: "#404040" },
-  optionText: { color: "#e5e5e5", fontSize: 15, fontWeight: "500" },
+  optionPressed: { opacity: 0.7 },
+  optionText: { color: "#d4d4d4", fontSize: 14, fontWeight: "500" },
   optionTextSelected: { color: "#ffffff" },
 });

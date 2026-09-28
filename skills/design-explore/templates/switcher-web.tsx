@@ -8,8 +8,20 @@
 // `history.replaceState(null, ...)`. Passing null, as the Next.js docs do, lets
 // the App Router sync to the new URL, so its next render keeps the param.
 // That keeps `useSearchParams` out, so no page needs a Suspense boundary for it.
+//
+// Every variant is a button in an always-open bar, so a switch is one click.
+// The bar is a row at the bottom center when it fits the window, and a column
+// at the bottom right when it does not. `[` and `]` step to the previous and
+// next variant of the exploration clicked last, or the first one.
 
-import { useEffect, useState, useSyncExternalStore, type CSSProperties } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+} from "react";
 
 // Next.js. In a Vite project this line becomes: const IS_DEV = import.meta.env.DEV;
 const IS_DEV = process.env.NODE_ENV !== "production";
@@ -32,6 +44,8 @@ type Snapshot = {
 const SERVER_SNAPSHOT: Snapshot = { explorations: [], picks: {} };
 const listeners = new Set<() => void>();
 const inBrowser = typeof window !== "undefined";
+// React 18 warns when useLayoutEffect runs in a server render.
+const useBrowserLayoutEffect = inBrowser ? useLayoutEffect : useEffect;
 
 let snapshot: Snapshot =
   IS_DEV && inBrowser ? { explorations: [], picks: readPicksFromUrl() } : SERVER_SNAPSHOT;
@@ -93,6 +107,21 @@ function pick(target: string, variantId: string): void {
   update(next);
 }
 
+function step(target: string | undefined, delta: number): void {
+  const exploration =
+    snapshot.explorations.find((candidate) => candidate.target === target) ?? snapshot.explorations[0];
+  if (!exploration) return;
+  const ids = exploration.variantIds;
+  const index = ids.indexOf(resolveVariant(snapshot, exploration));
+  const next = ids[(index + delta + ids.length) % ids.length];
+  if (next !== undefined) pick(exploration.target, next);
+}
+
+function isTyping(element: EventTarget | null): boolean {
+  if (!(element instanceof HTMLElement)) return false;
+  return element.isContentEditable || element.matches("input, textarea, select");
+}
+
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   return () => {
@@ -135,115 +164,135 @@ export function useExploreVariant<Variant>(
 /** Mount once in the root layout. Renders nothing outside dev builds. */
 export function ExploreSwitcher() {
   const current = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const [open, setOpen] = useState(false);
+  const [activeTarget, setActiveTarget] = useState<string>();
+  const [layout, setLayout] = useState<"row" | "column">("row");
+  const rootRef = useRef<HTMLDivElement>(null);
+  const rowWidth = useRef({ key: "", width: 0 });
+  const contentKey = current.explorations
+    .map((exploration) => `${exploration.target}:${exploration.variantIds.join(",")}`)
+    .join("|");
 
   useEffect(() => {
-    if (!open) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+    if (!IS_DEV) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "[" && event.key !== "]") return;
+      if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.isComposing || isTyping(event.target)) return;
+      event.preventDefault();
+      step(activeTarget, event.key === "]" ? 1 : -1);
     };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [open]);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activeTarget]);
+
+  // The row's width is measured while it is a row. The bar turns into a column
+  // when that width is more than the window has room for, and back when it fits.
+  useBrowserLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const fit = () => {
+      if (layout === "row") rowWidth.current = { key: contentKey, width: root.offsetWidth };
+      const measured = rowWidth.current.key === contentKey;
+      const fits = rowWidth.current.width <= window.innerWidth - 2 * EDGE;
+      setLayout(!measured || fits ? "row" : "column");
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [layout, contentKey]);
 
   if (!IS_DEV || current.explorations.length === 0) return null;
 
-  const only = current.explorations.length === 1 ? current.explorations[0] : undefined;
-  const label = only
-    ? `${only.target}: ${resolveVariant(current, only)}`
-    : `${current.explorations.length} explorations`;
+  const row = layout === "row";
+  const keyed = activeTarget ?? current.explorations[0]?.target;
 
   return (
-    <div style={styles.root}>
-      {open ? (
-        <div role="dialog" aria-label="Design variants" style={styles.panel}>
-          {current.explorations.map((exploration) => {
-            const chosen = resolveVariant(current, exploration);
-            return (
-              <div key={exploration.target} role="group" aria-label={exploration.target} style={styles.group}>
-                <div style={styles.groupLabel}>{exploration.target}</div>
-                {exploration.variantIds.map((variantId) => (
-                  <button
-                    key={variantId}
-                    type="button"
-                    aria-pressed={variantId === chosen}
-                    onClick={() => pick(exploration.target, variantId)}
-                    style={variantId === chosen ? styles.optionActive : styles.option}
-                  >
-                    {variantId}
-                  </button>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen((isOpen) => !isOpen)}
-        style={styles.pill}
-      >
-        {label}
-      </button>
+    <div
+      ref={rootRef}
+      role="toolbar"
+      aria-label="Design variants"
+      aria-orientation={row ? "horizontal" : "vertical"}
+      title="Press [ or ] to switch variants"
+      style={row ? styles.rootRow : styles.rootColumn}
+    >
+      {current.explorations.map((exploration) => {
+        const chosen = resolveVariant(current, exploration);
+        const labelStyle = exploration.target === keyed ? styles.labelKeyed : styles.label;
+        return (
+          <div
+            key={exploration.target}
+            role="group"
+            aria-label={exploration.target}
+            style={row ? styles.groupRow : styles.groupColumn}
+          >
+            <span style={labelStyle}>{exploration.target}</span>
+            {exploration.variantIds.map((variantId) => (
+              <button
+                key={variantId}
+                type="button"
+                aria-pressed={variantId === chosen}
+                onClick={() => {
+                  setActiveTarget(exploration.target);
+                  pick(exploration.target, variantId);
+                }}
+                style={variantId === chosen ? styles.optionActive : styles.option}
+              >
+                {variantId}
+              </button>
+            ))}
+          </div>
+        );
+      })}
     </div>
   );
 }
 
 // Neutral chrome on purpose: the switcher is a tool, not part of the design.
 const font = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
+// Gap between the bar and the window edge, in pixels.
+const EDGE = 16;
+
+const root: CSSProperties = {
+  position: "fixed",
+  bottom: EDGE,
+  zIndex: 2147483647,
+  display: "flex",
+  flexDirection: "column",
+  gap: 2,
+  padding: 4,
+  borderRadius: 12,
+  background: "#171717",
+  boxShadow: "0 8px 30px rgba(0, 0, 0, 0.35)",
+};
+
+const label: CSSProperties = {
+  padding: "4px 8px",
+  color: "#737373",
+  font: `600 11px/1.3 ${font}`,
+  letterSpacing: "0.04em",
+  textTransform: "uppercase",
+  whiteSpace: "nowrap",
+};
 
 const option: CSSProperties = {
-  display: "block",
-  width: "100%",
   padding: "6px 10px",
   border: 0,
   borderRadius: 8,
   background: "transparent",
-  color: "#e5e5e5",
+  color: "#d4d4d4",
   font: `500 13px/1.3 ${font}`,
   textAlign: "left",
+  whiteSpace: "nowrap",
   cursor: "pointer",
 };
 
 const styles = {
-  root: {
-    position: "fixed",
-    right: 16,
-    bottom: 16,
-    zIndex: 2147483647,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-    gap: 8,
-  },
-  panel: {
-    width: 240,
-    maxHeight: "60vh",
-    overflowY: "auto",
-    padding: 6,
-    borderRadius: 12,
-    background: "#171717",
-    boxShadow: "0 8px 30px rgba(0, 0, 0, 0.35)",
-  },
-  group: { padding: "4px 0" },
-  groupLabel: {
-    padding: "4px 10px",
-    color: "#a3a3a3",
-    font: `600 11px/1.3 ${font}`,
-    letterSpacing: "0.04em",
-    textTransform: "uppercase",
-  },
+  rootRow: { ...root, left: "50%", transform: "translateX(-50%)", width: "max-content" },
+  rootColumn: { ...root, right: EDGE, maxHeight: `calc(100vh - ${2 * EDGE}px)`, overflowY: "auto" },
+  groupRow: { display: "flex", alignItems: "center", gap: 2 },
+  groupColumn: { display: "flex", flexDirection: "column", gap: 2 },
+  label,
+  labelKeyed: { ...label, color: "#a3a3a3" },
   option,
   optionActive: { ...option, background: "#404040", color: "#ffffff" },
-  pill: {
-    padding: "8px 14px",
-    border: 0,
-    borderRadius: 999,
-    background: "#171717",
-    color: "#ffffff",
-    font: `600 13px/1 ${font}`,
-    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
-    cursor: "pointer",
-  },
 } satisfies Record<string, CSSProperties>;
