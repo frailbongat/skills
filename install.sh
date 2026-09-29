@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Link every skill in this repo into each agent's skills directory. That is
 # each folder in skills/, the ones I wrote, and in vendor/, the third-party
-# ones I patched.
+# ones I patched. Folders in claude-only/ go into ~/.claude/skills alone,
+# because the other agents already have their own version, like pi's /ship
+# extension.
 # Safe to re-run. It replaces its own symlinks and never deletes a real folder.
 set -euo pipefail
 
@@ -11,10 +13,13 @@ SRC_DIRS=(
   "$REPO_DIR/vendor"
 )
 
+CLAUDE_ONLY_DIR="$REPO_DIR/claude-only"
+CLAUDE_TARGET="$HOME/.claude/skills"
+
 TARGETS=(
   "$HOME/.agents/skills"
   "$HOME/.pi/agent/skills"
-  "$HOME/.claude/skills"
+  "$CLAUDE_TARGET"
   "$HOME/.config/crush/skills"
   "$HOME/.config/devin/skills"
 )
@@ -22,18 +27,22 @@ TARGETS=(
 FORCE=0
 [[ "${1:-}" == "--force" ]] && FORCE=1
 
-# Every skill folder, one path per line. Both directories share one namespace
-# in each target, so a name in both would have one link silently replace the
-# other. Refuse to run instead.
-SOURCES="$(for dir in "${SRC_DIRS[@]}"; do
-  for src in "$dir"/*/; do
-    if [[ -d "$src" ]]; then echo "${src%/}"; fi
+# Every skill folder, one path per line. skills/, vendor/, and claude-only/
+# share one namespace in ~/.claude/skills, so a name in two of them would have
+# one link silently replace the other. Refuse to run instead.
+list_sources() {
+  for dir in "$@"; do
+    for src in "$dir"/*/; do
+      if [[ -d "$src" ]]; then echo "${src%/}"; fi
+    done
   done
-done)"
+}
+SOURCES="$(list_sources "${SRC_DIRS[@]}")"
+CLAUDE_ONLY_SOURCES="$(list_sources "$CLAUDE_ONLY_DIR")"
 
-dupes="$(while read -r src; do basename "$src"; done <<< "$SOURCES" | sort | uniq -d)"
+dupes="$(while read -r src; do if [[ -n "$src" ]]; then basename "$src"; fi; done <<< "$SOURCES"$'\n'"$CLAUDE_ONLY_SOURCES" | sort | uniq -d)"
 if [[ -n "$dupes" ]]; then
-  echo "error: these names are in both skills/ and vendor/: $dupes" >&2
+  echo "error: these names are in more than one of skills/, vendor/, and claude-only/: $dupes" >&2
   exit 1
 fi
 
@@ -48,6 +57,11 @@ for target in "${TARGETS[@]}"; do
     continue
   fi
   mkdir -p "$target"
+
+  target_sources="$SOURCES"
+  if [[ "$target" == "$CLAUDE_TARGET" ]]; then
+    target_sources="$SOURCES"$'\n'"$CLAUDE_ONLY_SOURCES"
+  fi
 
   while read -r src; do
     [[ -z "$src" ]] && continue
@@ -69,7 +83,7 @@ for target in "${TARGETS[@]}"; do
     ln -s "$src" "$dest"
     echo "link  $dest"
     linked=$((linked + 1))
-  done <<< "$SOURCES"
+  done <<< "$target_sources"
 done
 
 echo

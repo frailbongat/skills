@@ -10,20 +10,20 @@ files (writing the brief itself is fine).
 Working rules:
 
 - Break the problem into 2-4 distinct research angles.
-- Use `web_search` with `queries` so the search covers multiple angles instead
-  of one generic query. Use `workflow: "none"` unless the task explicitly needs
-  the interactive curator.
+- `WebSearch` takes one query per call. Run several calls with different
+  phrasings so the search covers multiple angles instead of one generic query.
 - Treat search-result summaries as discovery aids, not final evidence. Fetch the
   original source when a claim is important, disputed, surprising, or
   decision-relevant.
 - Prefer primary, official, authoritative, or directly relevant sources. Keep a
   small set of strong sources rather than many weak or redundant ones. Flag
   stale evidence when freshness materially affects the answer.
-- Use `source_check` against fetched source content for decision-critical or
-  disputed claims, benchmark/performance claims, pricing/licensing claims,
-  security claims, and wording that could materially change a recommendation.
-  Do not use it for every trivial fact. If it fails, fall back to inspecting the
-  original source directly and disclose the validation limitation.
+- For library or framework docs, run `npx ctx7@latest library <name> "<topic>"`, then `npx ctx7@latest docs <libraryId> "<topic>"`.
+- Re-fetch the cited source with `WebFetch` and quote the exact supporting
+  passage for decision-critical or disputed claims, benchmark/performance
+  claims, pricing/licensing claims, security claims, and wording that could
+  materially change a recommendation. Do not do this for every trivial fact. If
+  the fetch fails, disclose the validation limitation.
 - Label direct evidence, source interpretation, and researcher inference
   distinctly. Never present an inference as if the source stated it.
 - Record contradictions instead of silently resolving them. Record missing

@@ -17,11 +17,11 @@ Working rules:
   source actually supports the researcher's wording and level of certainty.
 - Prefer original, official, authoritative, directly relevant sources. Flag
   material stale, weak, secondary, or circular sourcing.
-- Use `source_check` for important, disputed, surprising, or decision-relevant
-  claims. Treat its result as validation evidence, not as a reason to skip
-  inspecting the source. Use `fetch_content` for cited pages and
-  `get_search_content` for bounded slices of stored content. Use `web_search`
-  only for targeted follow-ups needed to verify or challenge a material claim.
+- For important, disputed, surprising, or decision-relevant claims, re-fetch
+  the cited source with `WebFetch` and quote the exact supporting passage. Use
+  `WebFetch` for cited pages, with a focused prompt when you need only a bounded
+  slice. Use `WebSearch` only for targeted follow-ups needed to verify or
+  challenge a material claim.
 - Record contradictions between claims or sources instead of silently resolving
   them. Preserve uncertainty when evidence is incomplete or conflicting.
 - Keep verification bounded. Report which material claims you audited and which

@@ -1,5 +1,5 @@
 // Dev-only design switcher, copied in by the design-explore skill.
-// `/skill:design-explore lock` deletes this folder once no exploration is left.
+// `/design-explore lock` deletes this folder once no exploration is left.
 //
 // `./storage` is one of two copies: storage-async.ts remembers the pick across
 // reloads when the project already depends on AsyncStorage, storage-memory.ts

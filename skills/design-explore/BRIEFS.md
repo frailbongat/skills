@@ -1,6 +1,6 @@
 # Explore briefs
 
-Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.pi/agent/skills/design-explore`. `<platform-file>` is WEB.md, EXPO.md, or ASTRO.md, the one for this project. `<ext>` is `astro` on Astro and `tsx` everywhere else. `<Name>` is the view's component name without `View`, such as `Profile`.
+Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.claude/skills/design-explore`. `<platform-file>` is WEB.md, EXPO.md, or ASTRO.md, the one for this project. `<ext>` is `astro` on Astro and `tsx` everywhere else. `<Name>` is the view's component name without `View`, such as `Profile`.
 
 ## Scout brief
 

@@ -1,7 +1,7 @@
 "use client";
 
 // Dev-only design switcher, copied in by the design-explore skill.
-// `/skill:design-explore lock` deletes this folder once no exploration is left.
+// `/design-explore lock` deletes this folder once no exploration is left.
 //
 // The pick lives in memory and in `?variant=` so a link or a second tab opens
 // the same variant. The URL is read from `window.location` and written with

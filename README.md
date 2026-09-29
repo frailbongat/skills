@@ -220,8 +220,9 @@ My three local Paseo plugins, `paseo-composer-pills`, `paseo-ticket-board`, and 
 ```
 skills/<name>/SKILL.md      a skill I wrote
 vendor/<name>/SKILL.md      a third-party skill I patched, pinned to one upstream commit
+claude-only/<name>/         a skill install.sh links into ~/.claude/skills alone, because pi has its own version
 bootstrap.sh                new machine: install the third-party skills, then run install.sh, hide-skills.sh, and paseo/paseo.sh apply
-install.sh                  symlink each skill in this repo into every agent's skills directory
+install.sh                  symlink each skill in skills/ and vendor/ into every agent's skills directory, and claude-only/ into ~/.claude/skills
 sync.sh                     refresh reference-skill-lock.json and the README tables from this machine
 lockfile.sh                 shared lock file reader used by bootstrap.sh and sync.sh
 reference-skill-lock.json   copy of this machine's Skills CLI lock file
