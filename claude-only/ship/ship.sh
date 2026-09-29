@@ -525,7 +525,7 @@ $(printf '%s\n' "$body" | head -n 1)"
   echo "${SUCCESS_HEADLINE//\{hash\}/$pushed}"
   echo
   printf '%s\n' "$body"
-  if [[ $VERBOSE -eq 1 ]]; then
+  if [[ $VERBOSE -eq 1 && -n "$CHECK_SUMMARY" ]]; then
     echo
     echo "Checks: $CHECK_SUMMARY"
   fi
@@ -697,7 +697,7 @@ run_checks() {
   fi
 
   if [[ ${#files[@]} -eq 0 ]]; then
-    CHECK_SUMMARY="skipped (no added or modified files)"
+    CHECK_SUMMARY=""
     return
   fi
   if [[ ${#files[@]} -gt $MAX_CHECK_FILES ]]; then
@@ -765,7 +765,7 @@ $(display_output "$(combined_output)")$advice"
     fi
   done
 
-  CHECK_SUMMARY="${ran:-skipped (no matching tool installed)}"
+  CHECK_SUMMARY="$ran"
 }
 
 # ---------------------------------------------------------------- state
@@ -947,7 +947,7 @@ check_outgoing_commits() {
   done
   run_checks committed ${present[@]+"${present[@]}"}
   if [[ $skipped -gt 0 ]]; then
-    CHECK_SUMMARY="$CHECK_SUMMARY; $(plural "$skipped" file) not checked because the working tree has uncommitted edits to them"
+    CHECK_SUMMARY="${CHECK_SUMMARY:+$CHECK_SUMMARY; }$(plural "$skipped" file) not checked because the working tree has uncommitted edits to them"
   fi
 }
 
@@ -1129,7 +1129,7 @@ cmd_prepare() {
   echo
   echo "destination: $(destination_target) ($DEST_REASON)"
   echo "origin: $(origin_repository)"
-  echo "checks: $CHECK_SUMMARY"
+  [[ -n "$CHECK_SUMMARY" ]] && echo "checks: $CHECK_SUMMARY"
   if [[ -n "$ISSUE_NUMBER" ]]; then
     echo "issue: end the subject with \" ($ISSUE_VERB #$ISSUE_NUMBER)\""
   else

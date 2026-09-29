@@ -81,6 +81,6 @@ After three conflicts in one `/ship`, stop and tell the user which files are sti
 Lay out a `shipped` report in this order:
 
 1. A fenced code block with no language tag, holding the script's output from the `Shipped` line through the commit message or commit list, copied as printed. Put nothing above it, since the `Shipped` line already says where the work went.
-2. Any bullet notes or `Checks:` line, rewritten as short prose under the block. Put file names, refs, and commands in backticks.
+2. Any bullet notes or `Checks:` line, rewritten as short prose under the block. Put file names, refs, and commands in backticks. When prepare printed no `checks:` line, no check ran, so leave checks out of the report.
 
 For `nothing`, skip the block and give its explanation as plain prose. Leave out the prepare diff.
