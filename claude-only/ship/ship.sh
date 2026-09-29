@@ -33,7 +33,7 @@ PUSH_ATTEMPTS=3
 TRUNK_CANDIDATES="main master trunk develop"
 CONFLICT_SKILL="$HOME/.agents/skills/resolving-merge-conflicts/SKILL.md"
 GIT_OPERATION_MARKERS="rebase-merge rebase-apply MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG"
-CHECK_LABELS=("prettier" "eslint" "ruff check" "ruff format" "gofmt" "rustfmt")
+CHECK_LABELS=("prettier" "eslint" "ruff check" "ruff format" "shellcheck" "gofmt" "rustfmt")
 USAGE="Usage: /ship [main|branch] [recheck] [verbose] [refs] [issue-number] (example: /ship main refs 174)"
 
 VERBOSE=0
@@ -631,6 +631,8 @@ load_spec() {
     "ruff format")
       SPEC_TOOL=ruff SPEC_SOURCE=path SPEC_EXTS="py pyi" SPEC_FIXES=1
       SPEC_ARGS=(format --check) SPEC_WRITE=(format) ;;
+    shellcheck)
+      SPEC_TOOL=shellcheck SPEC_SOURCE=path SPEC_EXTS="sh bash" SPEC_ARGS=(--severity=warning) ;;
     gofmt)
       SPEC_TOOL=gofmt SPEC_SOURCE=path SPEC_EXTS="go" SPEC_FAIL_ON_STDOUT=1 SPEC_FIXES=1
       SPEC_ARGS=(-l) SPEC_WRITE=(-w) ;;
