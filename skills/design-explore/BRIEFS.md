@@ -1,14 +1,14 @@
 # Explore briefs
 
-Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.claude/skills/design-explore`. `<platform-file>` is WEB.md, EXPO.md, or ASTRO.md, the one for this project. `<ext>` is `astro` on Astro and `tsx` everywhere else. `<Name>` is the view's component name without `View`, such as `Profile`.
+Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.claude/skills/design-explore`. `<platform-file>` is WEB.md, EXPO.md, ASTRO.md, or SVELTE.md, the one for this project. `<ext>` is `astro` on Astro, `svelte` on SvelteKit, and `tsx` everywhere else. `<Name>` is the view's component name without `View`, such as `Profile`.
 
 ## Scout brief
 
 ```
 Scout a design exploration of <target> in <repo-path>. Write one file, brief.md, and report back. Every other file stays as it is.
 
-1. Platform. From package.json, the platform is `expo` when expo-router is a dependency, `next` when next is a dependency and the project has an `app/` or `src/app/` folder, `astro` when astro is a dependency, and `vite` for plain React on Vite. For anything else, stop and report what you found.
-2. Placement. Find the file that renders <target> today, or report that the target is new. Read the "Where files go" and "Switcher" sections of <skill-dir>/WEB.md for next or vite, <skill-dir>/EXPO.md for expo, or <skill-dir>/ASTRO.md for astro. Following them, name the owner file, the view file, the target's `_variants/` folder, the source root, and the root layout file. Find the typecheck and lint commands in package.json.
+1. Platform. Read the package.json of the package that renders <target>. In a monorepo, that is a workspace package, such as one under `apps/`, so find it through the workspace config and read its package.json. The platform is `expo` when expo-router is a dependency, `next` when next is a dependency and the package has an `app/` or `src/app/` folder, `astro` when astro is a dependency, `sveltekit` when @sveltejs/kit is a dependency or dev dependency, and `vite` for plain React on Vite. For anything else, stop and report what you found.
+2. Placement. Find the file that renders <target> today, or report that the target is new. Read the "Where files go" and "Switcher" sections of <skill-dir>/WEB.md for next or vite, <skill-dir>/EXPO.md for expo, <skill-dir>/ASTRO.md for astro, or <skill-dir>/SVELTE.md for sveltekit. Following them, name the owner file, the view file, the target's `_variants/` folder, the source root, and the root layout file. Find the typecheck and lint commands in that package.json, written to run from the repo root, such as `pnpm --filter <package> check` in a monorepo.
 3. Brief. Write `brief.md` in the target's `_variants/` folder with these five sections:
    - `## Target` says what it is, where it renders, what it must show and do, and the data it gets today.
    - `## Brand lock` lists every color, font, logo file, and spacing, radius, and motion token, each with its value and the file it lives in.

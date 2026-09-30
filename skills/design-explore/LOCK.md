@@ -35,7 +35,7 @@ Done when the user has that command with the real sha and path filled in.
 Fill every `<...>` before sending, with absolute paths.
 
 ```
-Lock the design exploration <slug> in <repo-path>. The winner is <variant-id>. Steal notes: <notes, or "none">.
+Lock the design exploration <slug> in <repo-path>, on the <platform> platform. The winner is <variant-id>. Steal notes: <notes, or "none">.
 
 Exploration entry from state.json:
 <the entry JSON>
@@ -44,7 +44,7 @@ Shared folder: <sharedDir>. Root layout: <rootLayout.file>, with the lines <root
 1. Promote. Rewrite <viewFile> to render the UI from <variantsDir>/<variant-id>.<ext> and any `<variant-id>.*` helper files it imports. The view's export name and `<Name>ViewProps` stay as they are. Rename any class, id, or data attribute that starts with the variant id so it reads as the view's own. When the winner is `current`, the view stays as it is.
 2. Steal. For each steal note, read the variant file it names and port that piece into the view. Report a note you cannot map to code instead of guessing.
 3. Unwire. Make <ownerFile> render `<Name>View` where it renders `<Name>Explore`, importing it from the view file. Delete <variantsDir>. Remove this exploration from state.json. When no exploration is left, delete <sharedDir>, remove the root layout lines, and run `git diff <rootLayout.parentCommit> -- <rootLayout.file>`. Undo any exploration change it still shows, such as a fragment added around the navigator.
-4. Check. Run the typecheck and, when package.json has one, the lint script. From the repo root, run `rg -n '\b_variants\b|ExploreSwitcher|useExploreVariant'`.
+4. Check. Run the typecheck and, when package.json has one, the lint script. On sveltekit, first run `npx @sveltejs/mcp svelte-autofixer <file> --svelte-version 5` on every `.svelte` file you changed and fix every issue it lists. From the repo root, run `rg -n '\b_variants\b|ExploreSwitcher|useExploreVariant'`.
 
 Leave the changes uncommitted.
 

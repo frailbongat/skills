@@ -17,7 +17,6 @@ If nothing is staged, the script stages everything. If the user staged a subset 
 1. Run `${CLAUDE_SKILL_DIR}/ship.sh prepare $ARGUMENTS`. The first line of output is `status: <word>`:
    - `ready`: go to step 2.
    - `shipped` or `nothing`: the work is done or there was none. Go to [Report](#report).
-   - `confirm`: extra commits already on this branch would land on the trunk too. Show the user the listed commits and ask in plain text whether to land them, then wait for the reply. On yes, rerun this step with `--land-existing` added. The user's reply ends this skill's `allowed-tools` grant, so tell them to expect a permission prompt for each `ship.sh` run from here on. On anything else, stop. Nothing was staged or pushed.
    - `conflict`: go to [Conflicts](#conflicts).
    - `error`: show the user the reason and stop.
 2. Pick the issue suffix, see [Issue](#issue).
@@ -81,6 +80,7 @@ After three conflicts in one `/ship`, stop and tell the user which files are sti
 Lay out a `shipped` report in this order:
 
 1. A fenced code block with no language tag, holding the script's output from the `Shipped` line through the commit message or commit list, copied as printed. Put nothing above it, since the `Shipped` line already says where the work went.
-2. Any bullet notes or `Checks:` line, rewritten as short prose under the block. Put file names, refs, and commands in backticks. When prepare printed no `checks:` line, no check ran, so leave checks out of the report.
+2. When prepare printed `Also landing N existing commits`, list those commits under the block, since the user ran `/ship` knowing they were there.
+3. Any bullet notes or `Checks:` line, rewritten as short prose under the block. Put file names, refs, and commands in backticks. When prepare printed no `checks:` line, no check ran, so leave checks out of the report.
 
 For `nothing`, skip the block and give its explanation as plain prose. Leave out the prepare diff.

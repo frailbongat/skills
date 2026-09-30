@@ -23,8 +23,8 @@ The first argument picks the mode:
 - **Variant.** One design of the view, with id `<skill>-1` or `<skill>-2`. `-1` is **safe**, close to the current screens. `-2` is **bold**, pushing layout, hierarchy, and motion further. With per-skill 1, each skill builds only its `-1`. The **mix** is the variant with id `mix`, built from the parts of other variants that the user's notes name.
 - **Brand lock.** Every variant keeps the project's colors, fonts, logo, and tokens. Layout, hierarchy, spacing, and motion are free.
 - **Look-only.** A variant takes the props contract as it is, fetches no data, holds only local UI state, and adds no dependency.
-- **`<ext>`.** The file extension of the view, every variant, and the index file: `astro` on Astro, `tsx` everywhere else.
-- **`_variants/`.** The one folder name for every exploration file, so cleanup greps for one name. The **shared folder** at the source root holds the switcher and `state.json`. Each target has its own `_variants/` beside its view.
+- **`<ext>`.** The file extension of the view, every variant, and the index file: `astro` on Astro, `svelte` on SvelteKit, and `tsx` everywhere else.
+- **`_variants/`.** The one folder name for every exploration file, so cleanup greps for one name. The **shared folder**, `_variants/` where the platform file puts it, holds the switcher and `state.json`. Each target has its own `_variants/` beside its view.
 
 The design skills, keyed by the names the user may say. The default runs all four with per-skill 2, 8 variants.
 
@@ -37,7 +37,7 @@ The design skills, keyed by the names the user may say. The default runs all fou
 
 ## Explore
 
-Platform details live in [WEB.md](WEB.md) for Next.js App Router and plain React on Vite, in [EXPO.md](EXPO.md) for Expo Router, and in [ASTRO.md](ASTRO.md) for Astro. Read the one for this project as soon as step 2 names the platform. The subagent briefs are in [BRIEFS.md](BRIEFS.md). Launch subagents as the `paseo-delegation` skill says.
+Platform details live in [WEB.md](WEB.md) for Next.js App Router and plain React on Vite, in [EXPO.md](EXPO.md) for Expo Router, in [ASTRO.md](ASTRO.md) for Astro, and in [SVELTE.md](SVELTE.md) for SvelteKit. Read the one for this project as soon as step 2 names the platform. The subagent briefs are in [BRIEFS.md](BRIEFS.md). Launch subagents as the `paseo-delegation` skill says.
 
 ### 1. Clean tree
 
@@ -53,7 +53,7 @@ Done when `brief.md` has all five sections the scout brief asks for, and the sco
 
 ### 3. Split owner and view
 
-For an existing target, move its JSX into the view file the scout named. Everything the JSX reads or calls comes in through `<Name>ViewProps`. The owner keeps its data, hooks, and navigation, and renders `<Name>View`.
+For an existing target, move its markup into the view file the scout named. Everything the markup reads or calls comes in through `<Name>ViewProps`. The owner keeps its data, hooks, and navigation, and renders `<Name>View`.
 
 For a new target, create the owner, and write the view file holding only the exported `<Name>ViewProps`, built from what the target must show and do. The variants supply the UI.
 
@@ -62,7 +62,7 @@ Done when the view file imports no data fetching, store, or navigation code, its
 ### 4. Wire the switcher
 
 1. When the shared folder does not exist yet, copy the templates into it and mount `<ExploreSwitcher />` in the root layout, both as the platform file says.
-2. Write `index.<ext>` in the target's `_variants/` folder. `current` comes first when there is an incumbent. Step 6 adds the variants. Import the switcher, here and in the root layout, through the project's alias for the source root, or a relative path when it has none. On React platforms the file looks like this, and ASTRO.md shows the Astro form.
+2. Write `index.<ext>` in the target's `_variants/` folder. `current` comes first when there is an incumbent. Step 6 adds the variants. Import the switcher, here and in the root layout, through the project's alias for the source root, or a relative path when it has none. On React platforms the file looks like this, and ASTRO.md and SVELTE.md show the Astro and Svelte forms.
 
    ```tsx
    "use client"; // web only

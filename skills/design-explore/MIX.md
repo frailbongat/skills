@@ -55,7 +55,7 @@ Done when the user has every part of that list.
 
 ## Mix brief
 
-Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.claude/skills/design-explore`. `<platform-file>` is WEB.md, EXPO.md, or ASTRO.md, the one for this project. `<Name>` is the view's component name without `View`.
+Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.claude/skills/design-explore`. `<platform-file>` is WEB.md, EXPO.md, ASTRO.md, or SVELTE.md, the one for this project. `<Name>` is the view's component name without `View`.
 
 ```
 Build the `mix` variant of <target> in <repo-path>, with the <skill> design skill. A mix takes the parts named in the mix list below from existing variants and makes them one design, as if one designer drew the whole screen.

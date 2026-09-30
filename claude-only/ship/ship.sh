@@ -2,7 +2,7 @@
 # The helper behind the /ship skill. It runs in two phases, because Claude
 # writes the commit message between them:
 #
-#   ship.sh prepare [main|branch] [recheck] [verbose] [refs] [issue-number] [--land-existing]
+#   ship.sh prepare [main|branch] [recheck] [verbose] [refs] [issue-number]
 #   ship.sh commit --message "<message>"
 #
 # prepare checks the repository, syncs with the trunk, stages, runs the
@@ -16,7 +16,7 @@
 #   0  status ready, shipped, or nothing
 #   1  refused or failed, the reason is on stderr
 #   2  usage error
-#   3  status confirm: extra commits would land on the trunk, ask the user
+#   3  unused, formerly status confirm
 #   4  status conflict: a rebase or autostash conflict is waiting
 #   5  status rejected: the commit message broke a rule, rewrite it
 #
@@ -842,11 +842,12 @@ read_state() {
 
 parse_prepare_args() {
   local token word override=""
-  ISSUE_NUMBER="" KEEP_OPEN=0 LAND_EXISTING=0 OVERRIDE=""
+  ISSUE_NUMBER="" KEEP_OPEN=0 OVERRIDE=""
   for token in "$@"; do
     word="$(lower "$token")"
     case "$word" in
-      --land-existing) LAND_EXISTING=1 ;;
+      # Existing commits always land now, so the old flag changes nothing.
+      --land-existing) ;;
       # Checks always run in this port, so recheck is accepted and changes nothing.
       recheck | check | checks) ;;
       verbose | -v | --verbose | loud) VERBOSE=1 ;;
@@ -1066,19 +1067,13 @@ cmd_prepare() {
       nul_list list_staged
       staged=(${LIST[@]+"${LIST[@]}"})
     fi
-    # Read after the sync, so the question names what will actually land.
+    # Read after the sync, so the note names what will actually land.
     # On a clean tree these commits are the payload, not extras.
     riders="$(git log --oneline "origin/$DEST_REF..HEAD")"
-    if [[ -n "$riders" && $committed_only -eq 0 && $LAND_EXISTING -eq 0 ]]; then
+    if [[ -n "$riders" && $committed_only -eq 0 ]]; then
       count="$(count_lines "$riders")"
-      status confirm
-      echo
-      echo "Also land $(plural "$count" "existing commit") on $DEST_REF?"
-      echo
-      bullets "$riders"
-      echo
-      echo "Nothing was staged or pushed. To land them, run prepare again with --land-existing."
-      exit 3
+      notice "Also landing $(plural "$count" "existing commit") on $DEST_REF:"
+      notice "$(bullets "$riders")"
     fi
   fi
 
@@ -1087,7 +1082,7 @@ cmd_prepare() {
     exit 0
   fi
 
-  # Commits already on HEAD ride along with the new one: confirmed riders on
+  # Commits already on HEAD ride along with the new one: riders on
   # the trunk, or unpushed commits on a published branch.
   refuse_sensitive_outgoing
 
@@ -1297,7 +1292,7 @@ case "${1:-}" in
   commit) shift; cmd_commit "$@" ;;
   *)
     status error
-    echo "Usage: ship.sh prepare [main|branch] [recheck] [verbose] [refs] [issue-number] [--land-existing]" >&2
+    echo "Usage: ship.sh prepare [main|branch] [recheck] [verbose] [refs] [issue-number]" >&2
     echo "       ship.sh commit --message \"<message>\"" >&2
     exit 2
     ;;
