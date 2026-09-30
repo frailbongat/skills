@@ -2,12 +2,15 @@
 # Print every skill /route can pick from, one per line: its folder, then its
 # description. Global skills come from ~/.claude/skills, project skills from
 # .claude/skills and .agents/skills in the current directory. Hidden skills
-# are included, since those are the ones I forget.
+# are included, since those are the ones I forget. Each name prints once:
+# many repos keep the same skill in both .claude/skills and .agents/skills,
+# and a project copy wins over a global skill of the same name.
 set -euo pipefail
 
 # find exits 1 when a repo lacks .claude/skills or .agents/skills, which most do.
-{ find -L "$HOME/.claude/skills" .claude/skills .agents/skills \
-  -mindepth 2 -maxdepth 2 -name SKILL.md 2>/dev/null || true; } | sort | while read -r file; do
+for root in .claude/skills .agents/skills "$HOME/.claude/skills"; do
+  find -L "$root" -mindepth 2 -maxdepth 2 -name SKILL.md 2>/dev/null | sort || true
+done | awk -F/ '!seen[$(NF - 1)]++' | while read -r file; do
   awk -v dir="${file%/SKILL.md}" '
     # A folded description (`description: >`) continues on indented lines.
     function flush() { if (folded) print dir ": " desc; folded = 0 }
