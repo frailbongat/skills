@@ -20,6 +20,9 @@
 #   animate                       the only motion build skill
 #   emil-design-eng               gossgroup.co names it in component headers
 #   build-awwwards-quality-sites  gossgroup.co names it in component headers
+#   security-audit                vendored and patched, model-invoked so the agent
+#                                 reaches it when auth, input handling, or secrets
+#                                 come up (commit 9b604bd)
 
 # --- design, near-duplicates of design-taste-frontend / impeccable ---
 design-taste-frontend-v1
@@ -38,13 +41,11 @@ imagegen-frontend-mobile
 
 # --- motion, all reachable from `animate` ---
 animation-vocabulary
-find-animation-opportunities
 improve-animations
 apple-design
 animate-expo
 
 # --- narrow single-topic references ---
-ask-sonner
 mobile-native
 full-output-enforcement
 find-skills
@@ -61,17 +62,26 @@ paseo-handoff
 # (paseo-help stays visible: the paseo skill names it)
 paseo-plugin
 wizard
-write-swift
 
-# --- vendored and patched, in vendor/ ---
-# Cloudflare's security-audit, copied from commit c1c8a8c and patched for pi
-# and Paseo. It lives in vendor/security-audit and install.sh links it like
-# the skills in skills/. Start it through the `security-auditor` Paseo
-# profile or `/skill:security-audit`.
-security-audit
+# --- mattpocock/skills, reached through ask-matt or by name ---
+# ask-matt is the map of these, and /route reads it by path. Most ship
+# hidden upstream already. pr and diagnosing-bugs do not, and no visible
+# skill names either one.
+ask-matt
+diagnosing-bugs
+implement-spec
+improve-codebase-architecture
+pr
+retro
+triage
+grill-me
+to-questionnaire
+wait-what
 
 # --- mine, in skills/ ---
 # design-explore sets the field in its own SKILL.md, so hide-skills.sh finds it
 # already hidden. It is listed so this file stays the full list. Start it with
 # `/skill:design-explore`.
 design-explore
+# route does the same, start it with `/skill:route`.
+route
