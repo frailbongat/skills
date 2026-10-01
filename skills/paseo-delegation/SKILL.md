@@ -26,6 +26,12 @@ Use a worktree workspace only when two writers run at the same time. Branch it f
 
 Start a fresh agent for every task and every fix round, so each agent's context stays under 150k tokens. Brief it with file paths, commit hashes, and the findings to fix, and leave out the conversation that led there. Send a follow-up to a running agent only to answer a question it asked mid-task.
 
+## Only the top session launches agents
+
+When your prompt starts with "Follow the role brief in ~/.paseo/agent-roles/...", you are a subagent. Do your task, then hand back to the agent that launched you. End your report by naming the reviewer or follow-up agent the work needs, and let that agent launch it. This covers skills that launch agents, such as the `/code-review` step at the end of `implement`.
+
+The reason: Paseo tells a parent only that its child's turn ended. A subagent that launches its own agents ends its turn to wait for them, so the parent hears about that pause. The subagent's final report then reaches nobody.
+
 ## Running them
 
 Run agents in parallel when their tasks do not depend on each other. Launch several reviewers at once for correctness, tests, and unnecessary complexity.

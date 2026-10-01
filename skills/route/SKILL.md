@@ -35,7 +35,9 @@ argument-hint: "[issue-url|pr-url|#42|prompt]"
 
 5. Run the lead right away. Where it runs depends on whether it talks to me.
    - When the task is a GitHub issue, first run `gh issue edit <it> --add-assignee @me`, whatever the lead. The assignee marks the ticket as taken, and most leads never assign it.
-   - A lead that asks me questions partway through, such as `grill-with-docs`, `triage`, `wayfinder`, or `design-explore`, runs in this session. Use the Skill tool when the lead is in your skill list. If it isn't, read the `SKILL.md` in the folder `list-skills.sh` printed and follow it with the prompt as its arguments.
-   - Every other lead, such as `implement`, `code-review`, or `security-audit`, runs as a Paseo agent. Read `~/.claude/skills/paseo-delegation/SKILL.md` and launch the profile it names for that work, such as `worker` for `implement`. The brief is the prompt from step 4, plus the path of the lead's `SKILL.md` and each helper's `SKILL.md` for the agent to follow. Name the agent you launched and what it is for, then wait for its report.
+   - A lead that asks me questions partway through, such as `grill-with-docs`, `triage`, `wayfinder`, or `design-explore`, runs in this session. So does a lead that launches its own agents, such as `code-review`. Use the Skill tool when the lead is in your skill list. If it isn't, read the `SKILL.md` in the folder `list-skills.sh` printed and follow it with the prompt as its arguments.
+   - Every other lead, such as `implement` or `security-audit`, runs as a Paseo agent. Read `~/.claude/skills/paseo-delegation/SKILL.md` and launch the profile it names for that work, such as `worker` for `implement`. The brief is the prompt from step 4, plus the path of the lead's `SKILL.md` and each helper's `SKILL.md` for the agent to follow. For `implement`, add "Skip the `/code-review` step. The session that launched you runs the review after your report." Name the agent you launched and what it is for, then wait for its report.
 
-6. When the lead or its agent finishes, name the skill most likely to come next in the reply's next-action line, such as `to-spec` after `grill-with-docs`.
+6. When an `implement` agent reports, run `code-review` in this session on its uncommitted diff, then report the build and the review together.
+
+7. When the lead or its agent finishes, name the skill most likely to come next in the reply's next-action line, such as `to-spec` after `grill-with-docs`.
