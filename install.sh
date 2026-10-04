@@ -2,8 +2,8 @@
 # Link every skill in this repo into each agent's skills directory. That is
 # each folder in skills/, the ones I wrote, and in vendor/, the third-party
 # ones I patched. Folders in claude-only/ go into ~/.claude/skills alone,
-# because the other agents already have their own version, like pi's /ship
-# extension.
+# because another agent has its own version, like pi's /ship extension, or the
+# skill uses Claude Code frontmatter, like /sync's ${CLAUDE_SKILL_DIR}.
 # Safe to re-run. It replaces its own symlinks and never deletes a real folder.
 set -euo pipefail
 
