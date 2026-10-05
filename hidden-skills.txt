@@ -25,7 +25,6 @@
 #                                 come up (commit 9b604bd)
 
 # --- design, near-duplicates of design-taste-frontend / impeccable ---
-design-taste-frontend-v1
 high-end-visual-design
 gpt-taste
 stitch-design-taste

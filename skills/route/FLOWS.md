@@ -12,7 +12,7 @@ My flows, tie-breaks, and helper rules.
 
 - **Grilling.** Inside a repo, `grill-with-docs` beats `grilling` and `grill-me`. Outside a repo, `grill-me` wins.
 - **Design.** Design work starts at `impeccable` or `design-explore`. Pick these only when I name them:
-  - the near-duplicate design skills `design-taste-frontend-v1`, `high-end-visual-design`, `gpt-taste`, `stitch-design-taste`, `industrial-brutalist-ui`, `minimalist-ui`, and `redesign-existing-projects`
+  - the near-duplicate design skills `high-end-visual-design`, `gpt-taste`, `stitch-design-taste`, `industrial-brutalist-ui`, `minimalist-ui`, and `redesign-existing-projects`
   - the image-generation skills `brandkit`, `image-to-code`, `imagegen-frontend-web`, and `imagegen-frontend-mobile`
 - **Motion.** `animate` covers web, and `animate-expo` covers Expo and React Native.
 - **Build.** `implement` is the lead only for a ticket or a spec. A concrete task with no spec starts at the specialist skill that matches it, such as `animate-expo` for a swipe-to-dismiss sheet in Expo, with no grilling first.

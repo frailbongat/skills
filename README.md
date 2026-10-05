@@ -136,13 +136,12 @@ row with `npx skills add <from>@<skill> -g -y`, or all of them with
 | `wizard` | Generate an interactive bash wizard that walks a human through steps only they can perform. |
 | `writing-for-agents` | Writing documents for agents. |
 
-### [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill), 13 skills
+### [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill), 12 skills
 
 | Skill | What it does |
 | --- | --- |
 | `brandkit` | Premium brand-kit image generation skill for creating high-end brand-guidelines boards, logo systems, identity decks, and visual-world presentations. |
 | `design-taste-frontend` | Anti-slop frontend skill for landing pages, portfolios, and redesigns. |
-| `design-taste-frontend-v1` | The original v1 taste-skill, preserved for projects depending on its exact behavior. |
 | `full-output-enforcement` | Overrides default LLM truncation behavior. |
 | `gpt-taste` | Elite UX/UI & Advanced GSAP Motion Engineer. |
 | `high-end-visual-design` | Teaches the AI to design like a high-end agency. |
