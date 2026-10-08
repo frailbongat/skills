@@ -63,7 +63,7 @@ paseo-plugin
 wizard
 
 # --- mattpocock/skills, reached through ask-matt or by name ---
-# ask-matt is the map of these, and /route reads it by path. Most ship
+# ask-matt is the map of these. Most ship
 # hidden upstream already. pr and diagnosing-bugs do not, and no visible
 # skill names either one.
 ask-matt
