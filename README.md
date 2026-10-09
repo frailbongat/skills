@@ -2,14 +2,15 @@
 
 My agent skills, and the setup that puts every skill I use back on a new machine.
 
-Four things live here:
+Five things live here:
 
 - the skills I wrote, in `skills/`, symlinked into every coding agent on the machine
 - third-party skills I patched, in `vendor/`, symlinked the same way
+- skills for Claude Code alone, in `claude-only/`, symlinked into `~/.claude/skills` only. That covers my `ship` and `sync`, plus the 35 skills I ported from pstack and cursor-team-kit
 - the list of skills other people wrote that I install, in the tables below, which `bootstrap.sh` reinstalls for me
 - the part of my Paseo setup that works on any machine, in `paseo/`
 
-Take the whole thing or copy one skill out of `skills/`. My skills are MIT. Every skill in the tables belongs to whoever wrote it.
+Take the whole thing or copy one skill out of `skills/`. My skills are MIT. Every skill in the tables belongs to whoever wrote it, and so does each port in `claude-only/`.
 
 ## Quick start
 
@@ -58,6 +59,12 @@ Never run `npx skills update` on one. The Skills CLI would replace the patched `
 
 The HTML comment at the top of each `SKILL.md` body lists what the patch changed.
 
+## Ported skills
+
+`claude-only/` holds 35 skills I ported for Claude Code: 31 from [pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT, Lauren Tan) and `control-cli`, `control-ui`, `deslop`, and `verify-this` from cursor-team-kit (MIT, Cursor), all at commit `d0ef80d`. The first line of each `SKILL.md` body names its source. Each was ported for Claude Code alone, so pi, crush, devin, and Codex do not get them.
+
+Thirty of them set `disable-model-invocation: true` in their own front matter, so they stay out of the system prompt without `hide-skills.sh`. When a `route` playbook names one, the agent reads `~/.claude/skills/<name>/SKILL.md` by path.
+
 ## Install
 
 `install.sh` creates one symlink per folder in `skills/` and `vendor/` in each of these directories, and skips any that does not exist on the machine:
@@ -68,7 +75,9 @@ The HTML comment at the top of each `SKILL.md` body lists what the patch changed
 - `~/.config/crush/skills`
 - `~/.config/devin/skills`
 
-Re-running it is safe. It replaces its own symlinks and leaves real folders alone unless you pass `--force`. It stops with an error if a name is in both `skills/` and `vendor/`, because one link would replace the other.
+It links each folder in `claude-only/` into `~/.claude/skills` alone.
+
+Re-running it is safe. It replaces its own symlinks and leaves real folders alone unless you pass `--force`. It stops with an error if a name is in more than one of `skills/`, `vendor/`, and `claude-only/`, because one link would replace the other.
 
 Symlinks mean an edit in this repo reaches every agent at once, with no copy step.
 
@@ -95,7 +104,7 @@ The Skills CLI rewrites `SKILL.md` from the source repo, so `npx skills add` and
 
 ## Skills I did not write
 
-Forty skills sit in `~/.agents/skills` that are not mine. Thirty four come from the [Skills CLI](https://skills.sh), which records them in `~/.agents/.skill-lock.json`, and those thirty four are the tables below, one per repo they came from:
+Fifty eight skills sit in `~/.agents/skills` that are not mine. Fifty two come from the [Skills CLI](https://skills.sh), which records them in `~/.agents/.skill-lock.json`, and those fifty two are the tables below, one per repo they came from:
 
 <!-- skills:start -->
 
@@ -227,7 +236,7 @@ My three local Paseo plugins, `paseo-composer-pills`, `paseo-ticket-board`, and 
 ```
 skills/<name>/SKILL.md      a skill I wrote
 vendor/<name>/SKILL.md      a third-party skill I patched, pinned to one upstream commit
-claude-only/<name>/         a skill install.sh links into ~/.claude/skills alone, because pi has its own version or it needs Claude Code
+claude-only/<name>/         a skill install.sh links into ~/.claude/skills alone, because pi has its own version or it needs Claude Code, like the pstack ports
 bootstrap.sh                new machine: install the third-party skills, then run install.sh, hide-skills.sh, and paseo/paseo.sh apply
 install.sh                  symlink each skill in skills/ and vendor/ into every agent's skills directory, and claude-only/ into ~/.claude/skills
 sync.sh                     refresh reference-skill-lock.json and the README tables from this machine
