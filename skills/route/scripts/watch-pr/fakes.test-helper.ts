@@ -18,6 +18,7 @@ export interface FakeReaderOptions {
   readonly rollupPages?: readonly RollupPage[];
   readonly threads?: readonly ReviewThread[];
   readonly commitRollups?: readonly CommitRollup[];
+  readonly hasActionsWorkflows?: boolean;
   readonly openPullRequests?: readonly OpenPullRequest[];
   readonly origin?: Repository | null;
   readonly current?: PrContext;
@@ -113,6 +114,10 @@ export function fakeReader(
     async commitRollups() {
       calls.push("commitRollups");
       return options.commitRollups ?? [{ oid: "head", state: "SUCCESS" }];
+    },
+    async hasActionsWorkflows() {
+      calls.push("hasActionsWorkflows");
+      return options.hasActionsWorkflows ?? true;
     },
   };
 }

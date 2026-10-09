@@ -221,6 +221,24 @@ it("waits on a draft while checks are pending, then reports the draft gate", asy
   });
 });
 
+it("reads a clean PR in a repo with no CI as ready", async () => {
+  const snapshot = await readSnapshot({
+    reader: fakeReader({
+      fastPath: { kind: "unusable", exitCode: 1, stderr: "" },
+      hasActionsWorkflows: false,
+      commitRollups: [{ oid: "head", state: null }],
+    }),
+    context: context(13),
+    pendingHistory: "include",
+    allowDraft: false,
+  });
+  expect(snapshot).toMatchObject({
+    kind: "open",
+    ci: { kind: "ci-clean", source: "no-ci", all: [] },
+  });
+  expect(classifyPr(snapshot)).toMatchObject({ kind: "ready" });
+});
+
 describe("queued-stack cadence", () => {
   async function openSnapshot(pr: PrContext) {
     return readSnapshot({

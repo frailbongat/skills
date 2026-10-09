@@ -191,6 +191,32 @@ describe("main", () => {
     expect(harness.stdout[0]).not.toContain('"kind":"QUEUE"');
   });
 
+  it("prints the status table at once for a PR in a repo with no CI", async () => {
+    const reader = fakeReader({
+      fastPath: { kind: "unusable", exitCode: 1, stderr: "" },
+      hasActionsWorkflows: false,
+      commitRollups: [{ oid: "head", state: null }],
+    });
+    const harness = testRuntime(reader);
+    const code = await main(
+      [
+        "--owner",
+        "owner",
+        "--repo",
+        "repo",
+        "--pr",
+        "1",
+        "--status-only",
+        "--pretty",
+      ],
+      harness.runtime
+    );
+    expect(code).toBe(0);
+    expect(harness.stdout.join("")).toContain(
+      "| [#1](https://github.com/owner/repo/pull/1) | no CI | ✅ | ✅ |"
+    );
+  });
+
   it("returns exit 4 for a hidden GitHub-side CI refusal", async () => {
     const reader = fakeReader({
       facts: { mergeStateStatus: "BLOCKED" },

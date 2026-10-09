@@ -76,6 +76,26 @@ describe("checks fallback chain", () => {
     );
     expect(reader.calls).toEqual(["checksFastPath", "checkRollupPage:null"]);
   });
+
+  it("reads empty paths in a repo with no Actions workflows as no CI", async () => {
+    const reader = fakeReader({
+      fastPath: {
+        kind: "unusable",
+        exitCode: 1,
+        stderr: "no checks reported on the 'feature' branch",
+      },
+      hasActionsWorkflows: false,
+    });
+    expect(await resolveChecks(reader, context)).toEqual({
+      source: "no-ci",
+      checks: [],
+    });
+    expect(reader.calls).toEqual([
+      "checksFastPath",
+      "checkRollupPage:null",
+      "hasActionsWorkflows",
+    ]);
+  });
 });
 
 describe("rollup node mapping", () => {
