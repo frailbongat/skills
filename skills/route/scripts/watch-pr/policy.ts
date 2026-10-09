@@ -65,13 +65,14 @@ export async function readSnapshot(args: {
     return { kind: "closed", context: args.context, facts };
   const threads = await args.reader.reviewThreads(args.context);
   const checks = await resolveChecks(args.reader, args.context);
+  const all: readonly T.Check[] = checks.checks;
   const failed = nonEmpty(
-    checks.checks.filter(
+    all.filter(
       (check): check is T.FailedCheck => check.kind === "failed"
     )
   );
   const pending = nonEmpty(
-    checks.checks.filter(
+    all.filter(
       (check): check is T.PendingCheck => check.kind === "pending"
     )
   );
@@ -125,7 +126,7 @@ export async function readSnapshot(args: {
     facts,
     threads,
     ci,
-    reviewAutomationRunning: checks.checks.some(
+    reviewAutomationRunning: all.some(
       (check) =>
         check.kind === "pending" &&
         AUTOMATION_TOKENS.some((token) =>

@@ -599,6 +599,18 @@ export class GhGitHubReader implements T.GitHubReader {
       };
     });
   }
+  async hasActionsWorkflows(repository: T.Repository): Promise<boolean> {
+    const count = at(
+      await runJson([
+        "gh",
+        "api",
+        `repos/${repository.owner}/${repository.repo}/actions/workflows?per_page=1`,
+      ]),
+      ["total_count"]
+    );
+    if (typeof count !== "number") missing("workflows.total_count", count);
+    return count > 0;
+  }
 }
 
 export async function resolveChecks(
@@ -617,6 +629,11 @@ export async function resolveChecks(
   } while (after !== null);
   const fallback = nonEmpty(checks);
   if (fallback !== null) return { source: "graphql-rollup", checks: fallback };
+  // Empty reads stay retryable because checks can lag a push. A repo with no
+  // Actions workflows never reports any, so it reads as no CI. Commit check
+  // suites cannot tell the two apart: installed apps queue suites that never run.
+  if (!(await reader.hasActionsWorkflows(context)))
+    return { source: "no-ci", checks: [] };
   const suffix =
     fast.kind === "unusable"
       ? `fast path exit=${fast.exitCode}; GraphQL rollup was empty${firstLine(fast.stderr) ? `; ${firstLine(fast.stderr)}` : ""}`

@@ -6,7 +6,7 @@ function ciCell(row: T.PrSnapshot): string {
   const was = row.ci.hadPreviousPassingCi ? ", was ✅" : "";
   switch (row.ci.kind) {
     case "ci-clean":
-      return "✅";
+      return row.ci.source === "no-ci" ? "no CI" : "✅";
     case "ci-pending":
       return `⏳ ${row.ci.pending.length} pending${was}`;
     case "ci-failing":

@@ -86,10 +86,12 @@ export type Check =
     });
 export type FailedCheck = Extract<Check, { readonly kind: "failed" }>;
 export type PendingCheck = Extract<Check, { readonly kind: "pending" }>;
-export interface CheckRead {
-  readonly source: "gh-pr-checks" | "graphql-rollup";
-  readonly checks: NonEmpty<Check>;
-}
+export type CheckRead =
+  | {
+      readonly source: "gh-pr-checks" | "graphql-rollup";
+      readonly checks: NonEmpty<Check>;
+    }
+  | { readonly source: "no-ci"; readonly checks: readonly [] };
 export interface CommitRollup {
   readonly oid: string;
   readonly state: RollupState;
@@ -115,7 +117,7 @@ export type GitHubMergeAllowed =
 export type GitHubMergeAssessment = GitHubMergeAllowed | GitHubMergeRefusal;
 interface CiBase {
   readonly source: CheckRead["source"];
-  readonly all: NonEmpty<Check>;
+  readonly all: CheckRead["checks"];
   readonly hadPreviousPassingCi: boolean;
 }
 export type CiFailing = CiBase & {
@@ -391,6 +393,7 @@ export interface GitHubReader {
   ): Promise<RollupPage>;
   reviewThreads(context: PrContext): Promise<readonly ReviewThread[]>;
   commitRollups(context: PrContext): Promise<readonly CommitRollup[]>;
+  hasActionsWorkflows(repository: Repository): Promise<boolean>;
 }
 export interface PollingOptions {
   readonly interval: number;

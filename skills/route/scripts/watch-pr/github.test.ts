@@ -57,13 +57,13 @@ describe("checks fallback chain", () => {
       fastPath: { kind: "checks", checks: [] },
       rollupPages: [{ checks: [pendingCheck("fallback")], endCursor: null }],
     });
-    expect((await resolveChecks(reader, context)).checks[0].name).toBe(
-      "fallback"
-    );
+    expect(
+      (await resolveChecks(reader, context)).checks.map((check) => check.name)
+    ).toEqual(["fallback"]);
     expect(reader.calls).toEqual(["checksFastPath", "checkRollupPage:null"]);
   });
 
-  it("fails closed when both paths are empty", async () => {
+  it("fails closed when both paths are empty in a repo with workflows", async () => {
     const reader = fakeReader({
       fastPath: {
         kind: "unusable",
@@ -74,7 +74,11 @@ describe("checks fallback chain", () => {
     await expect(resolveChecks(reader, context)).rejects.toBeInstanceOf(
       ChecksUnavailable
     );
-    expect(reader.calls).toEqual(["checksFastPath", "checkRollupPage:null"]);
+    expect(reader.calls).toEqual([
+      "checksFastPath",
+      "checkRollupPage:null",
+      "hasActionsWorkflows",
+    ]);
   });
 
   it("reads empty paths in a repo with no Actions workflows as no CI", async () => {

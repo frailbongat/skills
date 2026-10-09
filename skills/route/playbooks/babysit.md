@@ -1,6 +1,6 @@
 ### Babysit
 
-<!-- Ported from pstack (MIT, Lauren Tan, commit d0ef80d). Changes: the sentence about replacing Cursor's built-in babysit skill was cut, since Claude Code has no babysit skill. `/loop` in dynamic mode became Claude Code's `Monitor` tool, which wakes the agent on each line the watcher prints. -->
+<!-- Ported from pstack (MIT, Lauren Tan, commit d0ef80d). Changes: the sentence about replacing Cursor's built-in babysit skill was cut, since Claude Code has no babysit skill. `/loop` in dynamic mode became Claude Code's `Monitor` tool, which wakes the agent on each line the watcher prints. The watcher in `scripts/watch-pr/` now treats a repo with no CI, meaning no Actions workflows and no reported checks, as having no checks instead of retrying for about 12 minutes and then failing, since the user's repos have no CI. -->
 
 **You own the merge frontier. Declare a mode, clear one PR at a time, stop where the human's call begins.** A request to land or ship is `playbooks/shipping.md`, which begins where this playbook ends.
 
