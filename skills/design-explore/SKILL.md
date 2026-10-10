@@ -125,7 +125,7 @@ Done when the typecheck exits 0 and `git status --porcelain` prints nothing.
 
 The user chooses the winner, and your **pick** is the recommendation they read first. Base it on the rendered UI, since code hides the spacing, hierarchy, and overflow a screenshot shows.
 
-1. Screenshot `current` and every variant as the platform file's "Capturing a variant" section says. Save the files in `/tmp/design-explore/<slug>/`, outside the repo, and open every one with `read`. When the app will not run, ask the user to start it and wait.
+1. Screenshot `current` and every variant as the platform file's "Capturing a variant" section says. Save the files in a `design-explore/<slug>/` folder inside the scratch folder your agent rules name, or in `/tmp/design-explore/<slug>/` when they name none, outside the repo, and open every one with `read`. When the app will not run, ask the user to start it and wait.
 2. Read each variant's motion code, since a screenshot shows no motion.
 3. Pick the variant that best does what the `## Target` section of `brief.md` asks, inside the brand lock. Then list the **steals**, specific parts of other variants worth moving into the pick, such as a header, an empty state, or an entrance animation, each named with its variant id.
 4. Tell the user how to switch, using the platform file's section for it. Then give the pick with a reason of two lines or fewer, the steals, and the lock command with both filled in, such as `/design-explore lock taste-2 use the header motion from emil-1`. Add that they can reply with what they like in each variant to get a mix.
