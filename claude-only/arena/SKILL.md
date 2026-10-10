@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Arena
 
-Ported from pstack's `arena` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: Phase A step 3 and Phase C read `~/.claude/rules/pstack-models.md` in place of `~/.cursor/rules/pstack-models.mdc`, since that is the always-applied rule `setup-pstack` writes for Claude Code. The default runners and cross-judge pool are `claude-opus-5-5` at xhigh thinking and `claude-fable-5-1` at xhigh thinking in place of `claude-opus-5-5-xhigh` and `grok-4.7-xhigh-fast`, and the no-family-match fallback is `claude-opus-5-5` at xhigh thinking in place of `claude-opus-5-5-xhigh`, since a Paseo subagent sets the thinking level in its own field, not in the slug, per the `setup-pstack` port. The families are `claude-opus-*` and `claude-fable-*` in place of `claude-*` and `grok-*`, since both defaults are now Claude and the cross-judge still needs two families to pick a different one from the parent's. Step 3 says "subagent launcher" in place of "Task tool", since `~/.claude/CLAUDE.md` runs subagents as Paseo agents. Candidates write to `/Volumes/Dock/tmp/arena-<slug>/` in place of `/tmp/arena-<slug>/`, since `~/.claude/CLAUDE.md` keeps scratch files off the small internal disk.
+Ported from pstack's `arena` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: Phase A step 3 and Phase C read `~/.claude/rules/pstack-models.md` in place of `~/.cursor/rules/pstack-models.mdc`, since that is the always-applied rule `setup-pstack` writes for Claude Code. The default runners and cross-judge pool are `claude-opus-5-5` at xhigh thinking and `claude-fable-5-1` at xhigh thinking in place of `claude-opus-5-5-xhigh` and `grok-4.7-xhigh-fast`, and the no-family-match fallback is `claude-opus-5-5` at xhigh thinking in place of `claude-opus-5-5-xhigh`, since a Paseo subagent sets the thinking level in its own field, not in the slug, per the `setup-pstack` port. The families are `claude-opus-*` and `claude-fable-*` in place of `claude-*` and `grok-*`, since both defaults are now Claude and the cross-judge still needs two families to pick a different one from the parent's. Step 3 says "subagent launcher" in place of "Task tool", since `~/.claude/CLAUDE.md` runs subagents as Paseo agents. Candidates write to `/Volumes/Dock/tmp/arena-<slug>/` in place of `/tmp/arena-<slug>/`, since `~/.claude/CLAUDE.md` keeps scratch files off the small internal disk. Phase B spawns subagents in the background with notify on finish in place of `run_in_background: true`, since that is a Cursor `Task` parameter that the Claude Code Agent tool shares, `~/.claude/settings.json` denies that tool, and subagents run as Paseo agents. Phase C spawns a judge whose brief tells it to edit nothing in place of a readonly judge, since `readonly` was a Cursor `Task` parameter, Paseo agents keep MCP in every mode, and read-only now comes from the brief.
 
 Fan out N parallel attempts at the same task. Read every candidate end to end. Pick the strongest as the base. Graft the best ideas from the others into it. Verify the synthesized result.
 
@@ -32,7 +32,7 @@ The N candidates will receive the same prompt, so the prompt is the contract.
 
 ## Phase B: Fan out
 
-Spawn all N subagents in one message with `run_in_background: true`, each with the task, the path to the shared grounding, its own output path, and instructions to produce both the artifact and a short rationale.
+Spawn all N subagents in one message, in the background with notify on finish, each with the task, the path to the shared grounding, its own output path, and instructions to produce both the artifact and a short rationale.
 
 Each rationale names the alternatives the candidate considered and what it rejected.
 
@@ -40,7 +40,7 @@ If a candidate fails to produce output, proceed with N-1 and note the dropout in
 
 ## Phase C: Cross-judge
 
-After all Phase B candidates complete, choose one model from the `arena cross-judge pool` line in `~/.claude/rules/pstack-models.md`. If the rule or that line is missing, choose from `claude-opus-5-5` at xhigh thinking and `claude-fable-5-1` at xhigh thinking. Prefer a different model family from the parent's. Spawn one readonly judge subagent on that model. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with the parent's reading in Phase D, not with the candidates themselves. Don't spawn the judge while candidates are still writing.
+After all Phase B candidates complete, choose one model from the `arena cross-judge pool` line in `~/.claude/rules/pstack-models.md`. If the rule or that line is missing, choose from `claude-opus-5-5` at xhigh thinking and `claude-fable-5-1` at xhigh thinking. Prefer a different model family from the parent's. Spawn one judge subagent on that model, with a brief that tells it to edit nothing. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with the parent's reading in Phase D, not with the candidates themselves. Don't spawn the judge while candidates are still writing.
 
 ## Phase D: Pick a base
 

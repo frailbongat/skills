@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Why
 
-Ported from pstack's `why` (MIT, Lauren Tan, commit d0ef80d) for Claude Code.
+Ported from pstack's `why` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: the spawns read `~/.claude/rules/pstack-models.md` in place of `pstack-models.mdc`, since that is the always-applied rule `setup-pstack` writes for Claude Code. They drop `subagent_type`: `generalPurpose` and say "subagent launcher" in place of "Task tool", since `~/.claude/CLAUDE.md` runs subagents as Paseo agents. The investigator default is `claude-fable-5-1` at xhigh thinking in place of `grok-4.7-xhigh-fast`, and the synthesizer default is `claude-opus-5-5` at xhigh thinking in place of `claude-opus-5-5-xhigh`, since a Paseo subagent sets the thinking level in its own field, not in the slug, per the `setup-pstack` port. Step 3 lists MCPs from the Claude Code environment with `claude mcp list` as the fallback, in place of the Cursor environment and its `mcps/` directory, since Claude Code has no `mcps/` directory and `claude mcp list` prints the configured servers. The investigator and synthesizer configs drop `readonly`: `false` (agent mode) and the warning that readonly/Ask mode strips MCP, and keep why each needs MCP, since `readonly` was a Cursor `Task` parameter, Paseo agents keep MCP in every mode, and read-only now comes from the brief.
 
 Investigate the motivation and intent behind code.
 
@@ -83,7 +83,8 @@ Launch all matching investigators in a single message so they run concurrently. 
 
 Subagent config (each):
 - `model`: the `why investigators` line, default `claude-fable-5-1` at xhigh thinking
-- `readonly`: `false` (agent mode). **Do not use readonly mode.** It strips MCP access, which disables MCP-backed investigators entirely. Investigators still shouldn't write anything.
+
+MCP-backed investigators need MCP access. Investigators still shouldn't write anything.
 
 Each investigator gets:
 1. The base prompt from `references/investigator-prompt.md`
@@ -126,7 +127,8 @@ If your scope assessment suggests a single-commit trivial target where the PR de
 Spawn one synthesizer subagent:
 
 - `model`: the `why synthesizer` line, default `claude-opus-5-5` at xhigh thinking
-- `readonly`: `false` (agent mode). The synthesizer's quality check spot-verifies citations, which can require MCP access. Readonly mode strips MCPs and defeats that.
+
+The synthesizer's quality check spot-verifies citations, which can require MCP access.
 
 The synthesizer gets:
 1. The investigator findings, including any null results and any categories skipped with justification

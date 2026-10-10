@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Swarm
 
-Ported from pstack's `swarm` (MIT, Lauren Tan, commit d0ef80d) for Claude Code.
+Ported from pstack's `swarm` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: the intro and Phase A step 3 say "workers" and "concurrency limit" in place of "cloud workers" and "cloud concurrency limit", Phase B drops `environment: "cloud"` and the `environment: "local"` rule, and a worker that needs a non-default pushed branch gets it named in its brief and starts from it in its own git worktree in place of `cloud_base_branch`, since Paseo agents run on this machine and have no cloud environment. Phase A step 4 reads `~/.claude/rules/pstack-models.md` in place of `~/.cursor/rules/pstack-models.mdc`, since that is the always-applied rule `setup-pstack` writes for Claude Code. Its default is `claude-fable-5-1` at xhigh thinking in place of `grok-4.7-xhigh-fast`, since a Paseo subagent sets the thinking level in its own field, not in the slug, per the `setup-pstack` port. Step 4 says "subagent launcher" in place of "Task tool", and Phase B drops `subagent_type: generalPurpose`, since `~/.claude/CLAUDE.md` runs subagents as Paseo agents. Phase B spawns workers in the background with notify on finish in place of `run_in_background: true`, since that is a Cursor `Task` parameter that the Claude Code Agent tool shares, `~/.claude/settings.json` denies that tool, and subagents run as Paseo agents.
 
 Fan out N parallel workers. They may cover separate slices, race the same brief, or mix both. The parent waits, aggregates, and returns one report.
 
@@ -29,7 +29,7 @@ Open a todolist with one entry per phase before launching anything.
 
 ## Phase B: Fan out
 
-Spawn all N workers in one message with `run_in_background: true` and the step 4 model, left unset for `auto` or `inherit-parent`.
+Spawn all N workers in one message, in the background with notify on finish, and with the step 4 model, left unset for `auto` or `inherit-parent`.
 
 When a worker must start from a non-default pushed branch, name that branch in its brief and have the worker start from it in its own git worktree.
 
