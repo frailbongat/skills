@@ -18,11 +18,13 @@ Read the **paseo** skill for the tool details. The profiles are already set up, 
 
 ## Where the work lands
 
-The work lands in my session: its directory and the branch I am on. Create every agent without `workspaceId`, so it runs in this workspace and a worker commits on this branch, except in the 2 cases below.
+The work lands in my session: its directory and the branch I am on. Create every agent without `workspaceId`, so it runs in this workspace and a worker commits on this branch, except in the 3 cases below.
 
 The first exception is a task that belongs to another repo. Create a worktree workspace in that repo with `create_workspace`, branched off `origin/main`, and pass its `workspaceId` to every worker and reviewer on the task.
 
 The second exception is in this repo, when two writers run at the same time. Give one of them a worktree workspace branched from my current branch. When its work passes review, bring it home: from my session's directory, fast-forward or merge the worktree branch into my branch, then archive the workspace, which deletes the worktree. Paseo keeps the branch, but archive runs the repo's `paseo.json` teardown script, and that script or one it starts may delete the branch with `git branch -D`. Read every one of them before you archive. The task is done only once its commits sit on my branch.
+
+The third exception is a route playbook that will open a PR while my session sits on main or on a branch with unrelated work. Follow the Worktree rule in `route/playbooks/opening-a-pr.md`. Create a worktree workspace with `create_workspace`, branched off `origin/main`, and pass its `workspaceId` to every worker and reviewer on the task.
 
 ## Fresh agents
 
