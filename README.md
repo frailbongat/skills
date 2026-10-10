@@ -84,7 +84,7 @@ Symlinks mean an edit in this repo reaches every agent at once, with no copy ste
 
 Every installed skill puts its name and its whole description in the system prompt of every session, before I have typed anything. At 44 visible skills that was about 5,100 tokens a session, and the design and animation cluster was about 3,100 of it. Worse than the cost, most of those entries say the same thing in different words, so the agent had eleven plausible answers to "make this look good" and picked badly.
 
-`hidden-skills.txt` lists the ones that stay installed but stop advertising themselves. `hide-skills.sh` stamps `disable-model-invocation: true` into each one's front matter, which is the pi and Agent Skills field for "do not put this in the system prompt". The first version hid twenty skills and got about 2,500 tokens back. The list now names 36.
+`hidden-skills.txt` lists the ones that stay installed but stop advertising themselves. `hide-skills.sh` stamps `disable-model-invocation: true` into each one's front matter, which is the pi and Agent Skills field for "do not put this in the system prompt". The first version hid twenty skills and got about 2,500 tokens back. The list now names 37.
 
 ```bash
 ./hide-skills.sh            # hide everything in the list

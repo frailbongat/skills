@@ -51,6 +51,7 @@ animate-expo
 mobile-native
 full-output-enforcement
 find-skills
+research
 
 # --- paseo extras, only used when explicitly asked for ---
 # `paseo` names paseo-help. That is fine, because AGENTS.md tells agents to
