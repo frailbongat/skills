@@ -84,7 +84,7 @@ Symlinks mean an edit in this repo reaches every agent at once, with no copy ste
 
 Every installed skill puts its name and its whole description in the system prompt of every session, before I have typed anything. At 44 visible skills that was about 5,100 tokens a session, and the design and animation cluster was about 3,100 of it. Worse than the cost, most of those entries say the same thing in different words, so the agent had eleven plausible answers to "make this look good" and picked badly.
 
-`hidden-skills.txt` lists the ones that stay installed but stop advertising themselves. `hide-skills.sh` stamps `disable-model-invocation: true` into each one's front matter, which is the pi and Agent Skills field for "do not put this in the system prompt". The first version hid twenty skills and got about 2,500 tokens back. The list now names 36.
+`hidden-skills.txt` lists the ones that stay installed but stop advertising themselves. `hide-skills.sh` stamps `disable-model-invocation: true` into each one's front matter, which is the pi and Agent Skills field for "do not put this in the system prompt". The first version hid twenty skills and got about 2,500 tokens back. The list now names 30.
 
 ```bash
 ./hide-skills.sh            # hide everything in the list
@@ -103,7 +103,7 @@ The Skills CLI rewrites `SKILL.md` from the source repo, so `npx skills add` and
 
 ## Skills I did not write
 
-Forty seven skills sit in `~/.agents/skills` that are not mine. Forty three come from the [Skills CLI](https://skills.sh), which records them in `~/.agents/.skill-lock.json`, and those forty three are the tables below, one per repo they came from:
+Forty five skills sit in `~/.agents/skills` that are not mine. Forty one come from the [Skills CLI](https://skills.sh), which records them in `~/.agents/.skill-lock.json`, and those forty one are the tables below, one per repo they came from:
 
 <!-- skills:start -->
 
@@ -112,7 +112,7 @@ or per plugin when a repo holds several, biggest first. Install any single
 row with `npx skills add <from>@<skill> -g -y`, or all of them with
 `./bootstrap.sh`.
 
-### [mattpocock/skills](https://github.com/mattpocock/skills), 18 skills
+### [mattpocock/skills](https://github.com/mattpocock/skills), 17 skills
 
 | Skill | What it does |
 | --- | --- |
@@ -123,7 +123,6 @@ row with `npx skills add <from>@<skill> -g -y`, or all of them with
 | `grilling` | Grill the user relentlessly about a plan, decision, or idea. |
 | `improve-codebase-architecture` | Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick. |
 | `resolving-merge-conflicts` | Use when you need to resolve an in-progress git merge/rebase conflict. |
-| `retro` | Conduct a retrospective on a coding session. |
 | `setup-matt-pocock-skills` | Configure this repo for the engineering skills: set up its issue tracker, triage label vocabulary, and domain doc layout. |
 | `teach` | Teach the user a new skill or concept, within this workspace. |
 | `to-questionnaire` | Turn a decision you can't fully answer into a questionnaire for someone else to fill in. |
@@ -135,13 +134,12 @@ row with `npx skills add <from>@<skill> -g -y`, or all of them with
 | `wizard` | Generate an interactive bash wizard that walks a human through steps only they can perform. |
 | `writing-for-agents` | Writing documents for agents. |
 
-### [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill), 12 skills
+### [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill), 11 skills
 
 | Skill | What it does |
 | --- | --- |
 | `brandkit` | Premium brand-kit image generation skill for creating high-end brand-guidelines boards, logo systems, identity decks, and visual-world presentations. |
 | `design-taste-frontend` | Anti-slop frontend skill for landing pages, portfolios, and redesigns. |
-| `full-output-enforcement` | Overrides default LLM truncation behavior. |
 | `gpt-taste` | Elite UX/UI & Advanced GSAP Motion Engineer. |
 | `high-end-visual-design` | Teaches the AI to design like a high-end agency. |
 | `image-to-code` | Elite website image-to-code skill for Codex. |

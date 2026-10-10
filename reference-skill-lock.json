@@ -147,15 +147,6 @@
       "installedAt": "2026-09-22T14:28:14.237Z",
       "updatedAt": "2026-09-22T14:28:14.237Z"
     },
-    "full-output-enforcement": {
-      "source": "Leonxlnx/taste-skill",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/Leonxlnx/taste-skill.git",
-      "skillPath": "skills/output-skill/SKILL.md",
-      "skillFolderHash": "3dd6ad49b667d15182acddc9d3e4f7763ae33c9c",
-      "installedAt": "2026-09-22T14:28:14.239Z",
-      "updatedAt": "2026-09-22T14:28:14.239Z"
-    },
     "gpt-taste": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
@@ -345,16 +336,6 @@
       "pluginName": "mattpocock-skills",
       "installedAt": "2026-09-30T14:53:08.242Z",
       "updatedAt": "2026-09-30T14:53:08.242Z"
-    },
-    "retro": {
-      "source": "mattpocock/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/mattpocock/skills.git",
-      "skillPath": "skills/engineering/retro/SKILL.md",
-      "skillFolderHash": "335c1862a43da9d629abafdb79ca0c0de118be08",
-      "pluginName": "mattpocock-skills",
-      "installedAt": "2026-09-30T14:53:15.264Z",
-      "updatedAt": "2026-09-30T14:53:15.264Z"
     },
     "triage": {
       "source": "mattpocock/skills",

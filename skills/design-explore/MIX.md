@@ -71,7 +71,7 @@ Read first:
 - The "Capturing a variant" and "Variants on this platform" sections of <skill-dir>/<platform-file>.
 
 Steps:
-1. Decide. For each decide item, capture both candidates as the platform file says, open the screenshots with read, and choose the one that sits better with the rest of the list. Save screenshots in /tmp/design-explore/<slug>/.
+1. Decide. For each decide item, capture both candidates as the platform file says, open the screenshots with read, and choose the one that sits better with the rest of the list. Save screenshots in a design-explore/<slug>/ folder inside the scratch folder your agent rules name, or in /tmp/design-explore/<slug>/ when they name none, outside the repo.
 2. Build. Write `<variants-dir>/mix.<ext>` with a default-exported component whose props are `<Name>ViewProps`. When it already exists, revise it, keeping every part the list leaves alone. Helper parts go in the same file or in files named `mix.<part>.<ext>`. Port each part from its source variant, with the change its item asks. Then make the parts fit: one spacing scale, one type scale, one radius, and one motion style across the screen. Restyle a borrowed part where it clashes, and keep the quality the user named in each note, such as a numpad with no background.
 3. Wire. When <variants-dir>/index.<ext> does not list the mix yet, import it and add it last, the way the other variants are listed, and add `mix` to the end of `variantIds` for <slug> in <state-json>.
 4. Look. Capture the mix and open the screenshot with read. Compare each part with its source screenshot, fix every clash, overflow, and misalignment in one batch, then capture and look once more.

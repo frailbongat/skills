@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Interrogate
 
-Ported from pstack's `interrogate` (MIT, Lauren Tan, commit d0ef80d) for Claude Code.
+Ported from pstack's `interrogate` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: reviewers read `~/.claude/rules/pstack-models.md` in place of `~/.cursor/rules/pstack-models.mdc`, since that is the always-applied rule `setup-pstack` writes for Claude Code. They launch "as subagents" in place of "using the Task tool", drop `subagent_type`: `generalPurpose`, and the fallback says "subagent launcher" in place of "Task tool", since `~/.claude/CLAUDE.md` runs subagents as Paseo agents. The table defaults are `claude-opus-5-5` at xhigh thinking and `claude-fable-5-1` at xhigh thinking in place of `claude-opus-5-5-xhigh` and `grok-4.7-xhigh-fast`, since a Paseo subagent sets the thinking level in its own field, not in the slug, per the `setup-pstack` port. The families are `claude-opus-*` and `claude-fable-*` in place of `claude-*` and `grok-*`, since both defaults are now Claude and a rejected entry still needs to map to one reviewer's default. Each reviewer says its brief tells it to edit nothing in place of `readonly`: `true`, since `readonly` was a Cursor `Task` parameter, Paseo agents keep MCP in every mode, and read-only now comes from the brief.
 
 Spawn one reviewer per configured model to adversarially review code changes. Each model gets the same prompt and rubric. The adversarial signal comes from model diversity, not assigned personas.
 
@@ -44,7 +44,7 @@ Launch all reviewers as subagents in a single message. Use the `interrogate revi
 
 For each reviewer:
 - `model`: the configured `interrogate reviewers` entry, or the table default with no configured line. For an `auto` or `inherit-parent` entry, omit `model` so that reviewer runs on the parent model.
-- `readonly`: `true`
+- read-only: the brief tells it to edit nothing
 
 If the subagent launcher rejects a configured entry, run that reviewer on the table default of its family and say so. Families go by prefix: `claude-opus-*` and `claude-fable-*`. With no family match, use Reviewer A's default. If it rejects a table default, check the valid slugs in the launcher's error message, pick the closest equivalent (prefer the same family and reasoning tier), spawn with it, and open a separate PR to update the default table. Do not block the review on the slug issue. Never treat an alias entry as a rejected slug or apply either fallback to it.
 

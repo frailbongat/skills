@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # How
 
-Ported from pstack's `how` (MIT, Lauren Tan, commit d0ef80d) for Claude Code.
+Ported from pstack's `how` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: the spawns read `~/.claude/rules/pstack-models.md` in place of `pstack-models.mdc`, since that is the always-applied rule `setup-pstack` writes for Claude Code. They drop `subagent_type`: `generalPurpose` and say "subagent" and "subagent launcher" in place of "Task subagent" and "Task tool", since `~/.claude/CLAUDE.md` runs subagents as Paseo agents. The explorer default is `claude-fable-5-1` at xhigh thinking in place of `grok-4.7-xhigh-fast`, and the explainer default is `claude-opus-5-5` at xhigh thinking in place of `claude-opus-5-5-xhigh`, since a Paseo subagent sets the thinking level in its own field, not in the slug, per the `setup-pstack` port. Each spawn says its brief tells it to edit nothing in place of `readonly`: `true`, since `readonly` was a Cursor `Task` parameter, Paseo agents keep MCP in every mode, and read-only now comes from the brief.
 
 Explore the codebase to answer "how does X work?" questions. Produce architectural explanations at the level of a senior engineer onboarding onto a subsystem, enough to build a working mental model, not so much that it reads like annotated source code.
 
@@ -26,7 +26,7 @@ When in doubt, take the simple path.
 Decompose the question into 2 to 4 exploration angles, each a distinct slice of the subsystem. Spawn all explorers in a single message:
 
 - `model`: the `how explorer` line, default `claude-fable-5-1` at xhigh thinking
-- `readonly`: `true`
+- read-only: the brief tells it to edit nothing
 
 Each explorer gets the prompt in `references/explorer-prompt.md` with its angle filled in. Then go to Step 3.
 
@@ -35,7 +35,7 @@ Each explorer gets the prompt in `references/explorer-prompt.md` with its angle 
 Spawn one subagent that explores and explains in one pass:
 
 - `model`: the `how explainer` line, default `claude-opus-5-5` at xhigh thinking
-- `readonly`: `true`
+- read-only: the brief tells it to edit nothing
 
 Build its prompt from `references/explainer-prompt.md` without the explorer-findings section. Go to Step 4.
 
@@ -44,7 +44,7 @@ Build its prompt from `references/explainer-prompt.md` without the explorer-find
 Once all explorers have returned, spawn one subagent to synthesize their findings into one explanation:
 
 - `model`: the `how explainer` line, default `claude-opus-5-5` at xhigh thinking
-- `readonly`: `true`
+- read-only: the brief tells it to edit nothing
 
 Build its prompt from `references/explainer-prompt.md` with every explorer's findings filled in.
 
