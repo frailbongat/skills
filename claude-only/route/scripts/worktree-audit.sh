@@ -10,6 +10,8 @@
 # only when a transcript line has a cwd at or under the worktree, or it made an Edit,
 # Write, or NotebookEdit call on a file there. A bare path match also counted chats
 # that only read, grepped, or discussed the path, which held worktrees from the prune.
+# Any jq exit code except 1 counts as a hit, so a missing or failing jq holds the
+# worktree instead of dropping it to safe.
 # Read-only worktree prune audit. Classifies every git worktree by size, merge
 # state, uncommitted work, remote/PR state, and the most recent chat that
 # operated in it. Emits a table sorted by size with a suggested bucket. Never
@@ -84,12 +86,13 @@ git worktree list --porcelain | awk '/^worktree /{print $2}' | while read -r wt;
 	# transcripts that name the path, then jq keeps those with a cwd or an edited
 	# file at the worktree or under it. The exact-or-"/" test keeps glint-482 from
 	# matching glint-482-r37. A session started inside the worktree writes to the
-	# worktree's own slug dir.
+	# worktree's own slug dir. jq exits 1 only when no line matched. Any other code,
+	# such as 127 for a missing jq or 5 for a bad line, counts as a hit.
 	last="-"; last_ts=0
 	own="$HOME/.claude/projects/$(slug "$wt")"
 	f=$( { [ -n "$transcripts" ] && printf '%s\n' "$transcripts"; [ -d "$own" ] && printf '%s\n' "$own"; } \
 		| sort -u | tr '\n' '\0' | xargs -0 grep -rlF --include='*.jsonl' -e "$wt" 2>/dev/null \
-		| while read -r t; do jq -nRe --arg wt "$wt" "$operated" "$t" >/dev/null 2>&1 && printf '%s\n' "$t"; done \
+		| while read -r t; do jq -nRe --arg wt "$wt" "$operated" "$t" >/dev/null 2>&1; [ $? -ne 1 ] && printf '%s\n' "$t"; done \
 		| tr '\n' '\0' | xargs -0 stat -f '%m %N' 2>/dev/null | sort -rn | head -1)
 	if [ -n "$f" ]; then last_ts=$(echo "$f" | awk '{print $1}')
 		last=$(date -r "$last_ts" '+%Y-%m-%d' 2>/dev/null); fi
