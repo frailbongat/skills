@@ -6,7 +6,7 @@ Five things live here:
 
 - the skills I wrote, in `skills/`, symlinked into every coding agent on the machine
 - third-party skills I patched, in `vendor/`, symlinked the same way
-- skills for Claude Code alone, in `claude-only/`, symlinked into `~/.claude/skills` only. That covers my `ship` and `sync`, plus the 36 skills I ported from pstack and cursor-team-kit
+- skills for Claude Code alone, in `claude-only/`, symlinked into `~/.claude/skills` only. That covers my `ship` and `sync`, plus the 44 skills I ported from pstack and cursor-team-kit
 - the list of skills other people wrote that I install, in the tables below, which `bootstrap.sh` reinstalls for me
 - the part of my Paseo setup that works on any machine, in `paseo/`
 
@@ -60,9 +60,9 @@ The HTML comment at the top of each `SKILL.md` body lists what the patch changed
 
 ## Ported skills
 
-`claude-only/` holds 36 skills I ported for Claude Code: 32 from [pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT, Lauren Tan) and `control-cli`, `control-ui`, `deslop`, and `verify-this` from cursor-team-kit (MIT, Cursor), all at commit `d0ef80d`. The line under the heading in each `SKILL.md` names its source. `route` is pstack's `poteto-mode` under my old router's name. Each was ported for Claude Code alone, so pi, crush, devin, and Codex do not get them.
+`claude-only/` holds 44 skills I ported for Claude Code: 40 from [pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT, Lauren Tan) and `control-cli`, `control-ui`, `deslop`, and `verify-this` from cursor-team-kit (MIT, Cursor), all at commit `d0ef80d`. The line under the heading in each `SKILL.md` names its source. `route` is pstack's `poteto-mode` under my old router's name. Each was ported for Claude Code alone, so pi, crush, devin, and Codex do not get them.
 
-Thirty one of them set `disable-model-invocation: true` in their own front matter, so they stay out of the system prompt without `hide-skills.sh`. When a `route` playbook names one, the agent reads `~/.claude/skills/<name>/SKILL.md` by path.
+Thirty nine of them set `disable-model-invocation: true` in their own front matter, so they stay out of the system prompt without `hide-skills.sh`. When a `route` playbook names one, the agent reads `~/.claude/skills/<name>/SKILL.md` by path.
 
 ## Install
 
