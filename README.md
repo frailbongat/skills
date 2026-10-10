@@ -84,7 +84,7 @@ Symlinks mean an edit in this repo reaches every agent at once, with no copy ste
 
 Every installed skill puts its name and its whole description in the system prompt of every session, before I have typed anything. At 44 visible skills that was about 5,100 tokens a session, and the design and animation cluster was about 3,100 of it. Worse than the cost, most of those entries say the same thing in different words, so the agent had eleven plausible answers to "make this look good" and picked badly.
 
-`hidden-skills.txt` lists the ones that stay installed but stop advertising themselves. `hide-skills.sh` stamps `disable-model-invocation: true` into each one's front matter, which is the pi and Agent Skills field for "do not put this in the system prompt". The first version hid twenty skills and got about 2,500 tokens back. The list now names 37.
+`hidden-skills.txt` lists the ones that stay installed but stop advertising themselves. `hide-skills.sh` stamps `disable-model-invocation: true` into each one's front matter, which is the pi and Agent Skills field for "do not put this in the system prompt". The first version hid twenty skills and got about 2,500 tokens back. The list now names 36.
 
 ```bash
 ./hide-skills.sh            # hide everything in the list
@@ -112,13 +112,12 @@ or per plugin when a repo holds several, biggest first. Install any single
 row with `npx skills add <from>@<skill> -g -y`, or all of them with
 `./bootstrap.sh`.
 
-### [mattpocock/skills](https://github.com/mattpocock/skills), 25 skills
+### [mattpocock/skills](https://github.com/mattpocock/skills), 24 skills
 
 | Skill | What it does |
 | --- | --- |
 | `code-review` | Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). |
 | `codebase-design` | Shared vocabulary for designing deep modules. |
-| `diagnosing-bugs` | Diagnosis loop for hard bugs and performance regressions. |
 | `domain-modeling` | Build and sharpen a project's domain model. |
 | `grill-me` | A relentless interview to sharpen a plan or design. |
 | `grill-with-docs` | A relentless interview to sharpen a plan or design, which also creates docs (ADR's and glossary) as we go. |

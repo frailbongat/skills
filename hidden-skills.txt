@@ -67,9 +67,7 @@ paseo-plugin
 wizard
 
 # --- mattpocock/skills, reached by name ---
-# Most ship hidden upstream already. diagnosing-bugs does not, and no visible
-# skill names it.
-diagnosing-bugs
+# Most ship hidden upstream already.
 implement-spec
 improve-codebase-architecture
 retro

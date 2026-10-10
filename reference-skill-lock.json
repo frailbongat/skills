@@ -386,16 +386,6 @@
       "installedAt": "2026-09-23T05:09:57.718Z",
       "updatedAt": "2026-09-23T05:09:57.718Z"
     },
-    "diagnosing-bugs": {
-      "source": "mattpocock/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/mattpocock/skills.git",
-      "skillPath": "skills/engineering/diagnosing-bugs/SKILL.md",
-      "skillFolderHash": "de4236cf34757c4e9ea7afe78d46c023213ff254",
-      "pluginName": "mattpocock-skills",
-      "installedAt": "2026-09-30T14:53:00.696Z",
-      "updatedAt": "2026-09-30T14:53:00.696Z"
-    },
     "implement-spec": {
       "source": "mattpocock/skills",
       "sourceType": "github",
