@@ -44,7 +44,7 @@ The suffix is ` (closes #N)` or ` (refs #N)` at the end of the subject. Prepare 
 - `issue: end the subject with " (closes #174)"` means the user passed the number. Use that suffix exactly.
 - `issue verb: closes` or `issue verb: refs` means no number was passed. Find the issue in the session as follows.
 
-1. Pick one user message. Take the newest one that runs `/implement` and has a GitHub issue URL, `https://github.com/<owner>/<repo>/issues/<N>`. If no `/implement` message has one, take the newest user message that has one. Look no further back than that message.
+1. Pick one user message. Take the newest one that has a GitHub issue URL, `https://github.com/<owner>/<repo>/issues/<N>`. Look no further back than that message.
 2. Compare each issue URL in that message with the `origin:` line prepare printed. The `<owner>/<repo>` must match, ignoring case.
 3. If exactly one issue in that message matches, add ` (<verb> #<N>)`. If none match, or several do, add no suffix.
 

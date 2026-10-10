@@ -103,7 +103,7 @@ The Skills CLI rewrites `SKILL.md` from the source repo, so `npx skills add` and
 
 ## Skills I did not write
 
-Fifty eight skills sit in `~/.agents/skills` that are not mine. Fifty two come from the [Skills CLI](https://skills.sh), which records them in `~/.agents/.skill-lock.json`, and those fifty two are the tables below, one per repo they came from:
+Forty seven skills sit in `~/.agents/skills` that are not mine. Forty three come from the [Skills CLI](https://skills.sh), which records them in `~/.agents/.skill-lock.json`, and those forty three are the tables below, one per repo they came from:
 
 <!-- skills:start -->
 
@@ -112,21 +112,16 @@ or per plugin when a repo holds several, biggest first. Install any single
 row with `npx skills add <from>@<skill> -g -y`, or all of them with
 `./bootstrap.sh`.
 
-### [mattpocock/skills](https://github.com/mattpocock/skills), 23 skills
+### [mattpocock/skills](https://github.com/mattpocock/skills), 18 skills
 
 | Skill | What it does |
 | --- | --- |
-| `code-review` | Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). |
 | `codebase-design` | Shared vocabulary for designing deep modules. |
 | `domain-modeling` | Build and sharpen a project's domain model. |
 | `grill-me` | A relentless interview to sharpen a plan or design. |
 | `grill-with-docs` | A relentless interview to sharpen a plan or design, which also creates docs (ADR's and glossary) as we go. |
 | `grilling` | Grill the user relentlessly about a plan, decision, or idea. |
-| `handoff` | Compact the current conversation into a handoff document for another agent to pick up. |
-| `implement` | Implement a piece of work based on a spec or set of tickets. |
-| `implement-spec` | Implement the result of /to-spec and /to-tickets in code. |
 | `improve-codebase-architecture` | Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick. |
-| `research` | Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo. |
 | `resolving-merge-conflicts` | Use when you need to resolve an in-progress git merge/rebase conflict. |
 | `retro` | Conduct a retrospective on a coding session. |
 | `setup-matt-pocock-skills` | Configure this repo for the engineering skills: set up its issue tracker, triage label vocabulary, and domain doc layout. |
@@ -194,7 +189,7 @@ row with `npx skills add <from>@<skill> -g -y`, or all of them with
 
 No copy of any of them is committed here. Their repos own them, a vendored copy would go stale, and the license is theirs to set. The skills in `vendor/` are the exception, because they carry my patch.
 
-The other six are the Paseo skills, which the Paseo app installs and updates itself, so `bootstrap.sh` can only remind you about them. One more sits outside `~/.agents/skills` entirely: `impeccable`, installed by `npx impeccable`, which writes a different copy per agent with that agent's paths in it.
+The other four are the Paseo skills, which the Paseo app installs and updates itself, so `bootstrap.sh` can only remind you about them. One more sits outside `~/.agents/skills` entirely: `impeccable`, installed by `npx impeccable`, which writes a different copy per agent with that agent's paths in it.
 
 Run `./sync.sh` after installing or updating a skill. It copies `~/.agents/.skill-lock.json` into the repo and regenerates the tables from it, so they can never disagree with what `bootstrap.sh` installs.
 

@@ -32,7 +32,7 @@ Start a fresh agent for every task and every fix round, so each agent's context 
 
 ## Only the top session launches agents
 
-When your prompt starts with "Follow the role brief in ~/.paseo/agent-roles/...", you are a subagent. Do your task, then hand back to the agent that launched you. End your report by naming the reviewer or follow-up agent the work needs, and let that agent launch it. This covers skills that launch agents, such as the `/code-review` step at the end of `implement`.
+When your prompt starts with "Follow the role brief in ~/.paseo/agent-roles/...", you are a subagent. Do your task, then hand back to the agent that launched you. End your report by naming the reviewer or follow-up agent the work needs, and let that agent launch it. This covers skills that launch agents, such as `interrogate`.
 
 The reason: Paseo tells a parent only that its child's turn ended. A subagent that launches its own agents ends its turn to wait for them, so the parent hears about that pause. The subagent's final report then reaches nobody.
 

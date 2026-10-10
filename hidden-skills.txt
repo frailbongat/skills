@@ -52,14 +52,11 @@ animate-expo
 mobile-native
 full-output-enforcement
 find-skills
-research
 
 # --- paseo extras, only used when explicitly asked for ---
 # `paseo` names paseo-help. That is fine, because AGENTS.md tells agents to
 # read ~/.agents/skills/<name>/SKILL.md for any named skill they cannot see.
 paseo-help
-paseo-advisor
-paseo-committee
 paseo-handoff
 
 # --- rarely used, no visible skill hands work to them ---
@@ -68,7 +65,6 @@ wizard
 
 # --- mattpocock/skills, reached by name ---
 # Most ship hidden upstream already.
-implement-spec
 improve-codebase-architecture
 retro
 triage
