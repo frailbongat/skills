@@ -64,15 +64,12 @@ paseo-handoff
 paseo-plugin
 wizard
 
-# --- mattpocock/skills, reached through ask-matt or by name ---
-# ask-matt is the map of these. Most ship
-# hidden upstream already. pr and diagnosing-bugs do not, and no visible
-# skill names either one.
-ask-matt
+# --- mattpocock/skills, reached by name ---
+# Most ship hidden upstream already. diagnosing-bugs does not, and no visible
+# skill names it.
 diagnosing-bugs
 implement-spec
 improve-codebase-architecture
-pr
 retro
 triage
 grill-me
