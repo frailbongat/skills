@@ -30,11 +30,11 @@ if [[ $SKIP_MANAGED -eq 0 ]]; then
     exit 1
   fi
 
-  while IFS=$'\t' read -r name source source_type source_url _; do
+  while IFS=$'\t' read -r name source source_type source_url skill_path; do
     [[ -z "$name" ]] && continue
-    # install_args returns one word for GitHub skills and three for URL skills,
-    # so it stays unquoted here on purpose.
-    args="$(install_args "$name" "$source" "$source_type" "$source_url")"
+    # install_args returns several words for URL skills and plugin skills, so
+    # it stays unquoted here on purpose.
+    args="$(install_args "$name" "$source" "$source_type" "$source_url" "$skill_path")"
     echo "install  $name  ($args)"
     # shellcheck disable=SC2086
     # </dev/null keeps the Skills CLI from swallowing the loop's input.

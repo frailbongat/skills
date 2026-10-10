@@ -32,18 +32,25 @@ for name in sorted(lock["skills"]):
   fi
 }
 
-# install_args <name> <source> <sourceType> <sourceUrl> prints the arguments to
-# pass to `npx skills add`. GitHub skills use the short owner/repo@skill form;
-# anything else falls back to the clone URL plus --skill.
+# install_args <name> <source> <sourceType> <sourceUrl> <skillPath> prints the
+# arguments to pass to `npx skills add`. GitHub skills use the short
+# owner/repo@skill form; anything else falls back to the clone URL plus --skill.
+# A skill at <plugin>/skills/<name>/ sits inside a plugin, the same rule sync.sh
+# uses, and needs --full-depth: without it, `npx skills add cursor/plugins@tdd`
+# fails and lists only the 2 skills outside pstack.
 install_args() {
-  local name="$1" source="$2" source_type="$3" source_url="$4"
+  local name="$1" source="$2" source_type="$3" source_url="$4" skill_path="$5"
+  local args
 
   if [[ "$source_type" == "github" && "$source" == */* ]]; then
-    echo "$source@$name"
+    args="$source@$name"
   elif [[ -n "$source_url" ]]; then
-    echo "$source_url --skill $name"
+    args="$source_url --skill $name"
   else
     echo "error: skill $name has no source in the lock file" >&2
     return 1
   fi
+
+  [[ "$skill_path" == */skills/* ]] && args="$args --full-depth"
+  echo "$args"
 }
