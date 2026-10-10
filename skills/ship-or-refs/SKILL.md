@@ -1,6 +1,6 @@
 ---
 name: ship-or-refs
-description: "Decide between closing a ticket and `/ship refs` in the `### Next` sentence, and between `Closes` and `Refs` in a PR description. Use when a Linear key, GitHub issue, or pasted plan is in the session, or when writing a PR description for a GitHub issue."
+description: "Decide between closing a ticket and `/ship refs` in the `### Next` sentence, and between `Closes` and `Refs` in a PR description. Use when a Linear key, GitHub issue, or pasted plan is in the session."
 ---
 
 ## Finding the ticket
