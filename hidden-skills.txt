@@ -50,7 +50,6 @@ animate-expo
 
 # --- narrow single-topic references ---
 mobile-native
-full-output-enforcement
 find-skills
 
 # --- paseo extras, only used when explicitly asked for ---
@@ -66,7 +65,6 @@ wizard
 # --- mattpocock/skills, reached by name ---
 # Most ship hidden upstream already.
 improve-codebase-architecture
-retro
 triage
 grill-me
 to-questionnaire
