@@ -11,7 +11,8 @@
 #
 # Rules for this list:
 #   - Never hide a skill another VISIBLE skill hands work to by name.
-#   - Never hide a skill a live project names in its own docs or prompts.
+#   - Never hide a skill a live project names in its own docs or prompts,
+#     unless agents there read named skills by path.
 #   - One name per line. Blank lines and # comments are ignored.
 #
 # Kept visible on purpose:
@@ -21,7 +22,7 @@
 #                                 come up (commit 9b604bd)
 
 # --- design skills gossgroup.co names, still reached by name ---
-# Hidden is fine, since ~/.claude/CLAUDE.md "Skills you cannot see" reads a named skill by path.
+# Hidden is fine, since ~/.claude/CLAUDE.md and ~/.pi/agent/AGENTS.md tell the agent to read a named skill by path.
 design-taste-frontend
 animate
 emil-design-eng

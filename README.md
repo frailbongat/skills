@@ -97,7 +97,7 @@ A hidden skill still works. Two ways to reach one:
 - `/skill:<name>` runs it, same as before
 - an agent reads `~/.agents/skills/<name>/SKILL.md` by path when something points it there
 
-Nothing pulls a hidden skill in on its own. That is the whole trade, so the list has two hard rules. Never hide a skill that a still-visible skill hands work to by name, and never hide one that a live project names in its own docs or prompts. `emil-design-eng` and `build-awwwards-quality-sites` were on the first draft of the list until `gossgroup.co` turned out to name both in its component headers. Both are hidden now, along with `design-taste-frontend` and `animate`, since `~/.claude/CLAUDE.md` makes an agent read a named skill's `SKILL.md` by path.
+Nothing pulls a hidden skill in on its own. That is the whole trade, so the list has two hard rules. Never hide a skill that a still-visible skill hands work to by name, and never hide one that a live project names in its own docs or prompts, unless agents there read named skills by path. `emil-design-eng` and `build-awwwards-quality-sites` were on the first draft of the list until `gossgroup.co` turned out to name both in its component headers. Both are hidden now, along with `design-taste-frontend` and `animate`, since `~/.claude/CLAUDE.md` makes an agent read a named skill's `SKILL.md` by path.
 
 The Skills CLI rewrites `SKILL.md` from the source repo, so `npx skills add` and `npx skills update` both wipe the stamp. Re-run `./hide-skills.sh` after either. `sync.sh` is unaffected, it only reads descriptions.
 

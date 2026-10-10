@@ -11,7 +11,7 @@ hooks:
 
 # Poteto mode
 
-Ported from pstack's `poteto-mode` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: the Subagents section launches playbook helpers as Paseo profiles through `paseo-delegation` in place of `subagent_type: "poteto-agent"`, since `~/.claude/CLAUDE.md` says subagents still run as Paseo agents.
+Ported from pstack's `poteto-mode` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: the Subagents section launches playbook helpers as Paseo profiles through `paseo-delegation` in place of `subagent_type: "poteto-agent"`, since `~/.claude/CLAUDE.md` says subagents still run as Paseo agents. The routed workflow skills line says they set a model per role, since those ports set `model` and no `subagent_type`.
 
 ## Non-negotiables
 
@@ -93,7 +93,7 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 
 ## Subagents
 
-**Launch any subagent you spawn inside a playbook step as the matching Paseo profile, through the `paseo-delegation` skill** (code-writing delegates, ad-hoc helpers). Routed workflow skills (`how`, `why`, `interrogate`, `reflect`, `swarm`) set their own `subagent_type` for diverse-model review. Respect what the skill prescribes, don't override it with a Paseo profile.
+**Launch any subagent you spawn inside a playbook step as the matching Paseo profile, through the `paseo-delegation` skill** (code-writing delegates, ad-hoc helpers). Routed workflow skills (`how`, `why`, `interrogate`, `reflect`, `swarm`) set their own model per role. Keep the model each skill prescribes.
 
 **Defaults for every subagent call.** `run_in_background: true`, agent mode (readonly strips MCP), file pointers not inlined context, explicit model per role (configurable via `/setup-pstack`. Defaults `claude-fable-5-1` at xhigh thinking for code, `claude-opus-5-5` at xhigh thinking for prose and judgment). Code delegates tier by difficulty. The hardest changes (cross-cutting design, gnarly concurrency, subtle algorithms) go to your strongest judgment model (`claude-opus-5-5` at xhigh thinking), whether the task needs judgment on vague intent or is a precisely specified sequence of steps to execute to the letter. Trivial mechanical edits go to your fast code model. Per-role lines in the `/setup-pstack` rule override these defaults and the model choices in the routed skills (`how`, `why`, `arena`, `swarm`, `architect`, `interrogate`, `reflect`). A role with no line keeps its default, and a role line of `inherit-parent` or `auto` runs that role on the parent chat model (omit the subagent `model`). Each code playbook's configured model comes from its line (`feature, refactoring`, `bug-fix`, `perf-issue`, or `hillclimb`), and the hardest changes read `hardest tasks`. Prose and judgment read `judgment and prose`.
 
