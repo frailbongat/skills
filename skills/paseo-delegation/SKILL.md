@@ -18,11 +18,11 @@ Read the **paseo** skill for the tool details. The profiles are already set up, 
 
 ## Where the work lands
 
-The work lands in my session: its directory and the branch I am on. Create every agent without `workspaceId`, so it runs in this workspace and a worker commits on this branch.
+The work lands in my session: its directory and the branch I am on. Create every agent without `workspaceId`, so it runs in this workspace and a worker commits on this branch, except in the 2 cases below.
 
-When the task belongs to another repo, create a worktree workspace in that repo with `create_workspace`, branched off `origin/main`. Pass its `workspaceId` to every worker and reviewer on the task.
+The first exception is a task that belongs to another repo. Create a worktree workspace in that repo with `create_workspace`, branched off `origin/main`, and pass its `workspaceId` to every worker and reviewer on the task.
 
-Use a worktree workspace only when two writers run at the same time. Branch it from my current branch. When its work passes review, bring it home: from my session's directory, fast-forward or merge the worktree branch into my branch, then archive the workspace, which deletes the worktree. Paseo keeps the branch, but the repo's `paseo.json` teardown script runs on archive and may delete it with `git branch -D`. The task is done only once its commits sit on my branch.
+The second exception is in this repo, when two writers run at the same time. Give one of them a worktree workspace branched from my current branch. When its work passes review, bring it home: from my session's directory, fast-forward or merge the worktree branch into my branch, then archive the workspace, which deletes the worktree. Paseo keeps the branch, but archive runs the repo's `paseo.json` teardown script, and that script or one it starts may delete the branch with `git branch -D`. Read every one of them before you archive. The task is done only once its commits sit on my branch.
 
 ## Fresh agents
 
@@ -49,4 +49,4 @@ Name the agents you launched and what each one is for, one line each.
 1. Before `create_schedule`, run `list_schedules` and `inspect_schedule` on one result. Copy the user's repo, cwd, isolation, and prompt-file layout.
 2. A schedule prompt that deletes or sends gets a fresh `reviewer` before `create_schedule`, like any diff. The reviewer checks that each rule in the prompt is safe to run unattended.
 3. Dry-run the exact prompt from the cwd and isolation the schedule will use. Turn deletes off and leave every other step on, including commit, land, and teardown.
-4. Create the schedule, then keep it paused with `pause_schedule` until its prompt file is on the branch its worktree starts from.
+4. Call `pause_schedule` right after `create_schedule`, since `create_schedule` has no paused option and the schedule is live until you pause it. Keep it paused until its prompt file is on the branch its worktree starts from.
