@@ -1,6 +1,6 @@
 ---
 name: ship-or-refs
-description: "Decide between closing a ticket and `/ship refs` in the `### Next` sentence. Use when a Linear key, GitHub issue, or pasted plan is in the session."
+description: "Decide between closing a ticket and `/ship refs` in the `### Next` sentence, and between `Closes` and `Refs` in a PR description. Use when a Linear key, GitHub issue, or pasted plan is in the session."
 ---
 
 ## Finding the ticket
@@ -54,3 +54,9 @@ When I only scoped part of the ticket, say so and name the rest:
 
 /ship refs, then #42 still wants the rate-limit headers and the 429 retry.
 ```
+
+## Closes or Refs in a PR description
+
+When the task came from a GitHub issue and the PR finishes it by the three checks above, end the PR description with `Closes #<number>`, so the merge closes the issue. Otherwise end it with `Refs #<number>`. GitHub ignores `Closes` on a PR whose base is not the default branch.
+
+In a stack, run `gh api repos/<owner>/<repo> --jq .delete_branch_on_merge`. When it prints `true`, each PR that finishes its own issue carries `Closes`, because GitHub retargets the next PR to the default branch when it deletes the merged branch. Otherwise only the root PR carries `Closes`.
