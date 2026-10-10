@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Arena
 
-Ported from pstack's `arena` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: candidates write to `/Volumes/Dock/tmp/arena-<slug>/` in place of `/tmp/arena-<slug>/`, since `~/.claude/CLAUDE.md` keeps scratch files off the small internal disk.
+Ported from pstack's `arena` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: Phase A step 3 and Phase C read `~/.claude/rules/pstack-models.md` in place of `~/.cursor/rules/pstack-models.mdc`, since that is the always-applied rule `setup-pstack` writes for Claude Code. The default runners and cross-judge pool are `claude-opus-5-5` at xhigh thinking and `claude-fable-5-1` at xhigh thinking in place of `claude-opus-5-5-xhigh` and `grok-4.7-xhigh-fast`, since a Claude Code subagent takes the thinking level apart from the slug and runs Claude models. The families are `claude-opus-*` and `claude-fable-*` in place of `claude-*` and `grok-*`, since both defaults are now Claude and the cross-judge still needs two families to pick a different one from the parent's. Step 3 says "subagent launcher" in place of "Task tool", since `~/.claude/CLAUDE.md` runs subagents as Paseo agents. Candidates write to `/Volumes/Dock/tmp/arena-<slug>/` in place of `/tmp/arena-<slug>/`, since `~/.claude/CLAUDE.md` keeps scratch files off the small internal disk.
 
 Fan out N parallel attempts at the same task. Read every candidate end to end. Pick the strongest as the base. Graft the best ideas from the others into it. Verify the synthesized result.
 

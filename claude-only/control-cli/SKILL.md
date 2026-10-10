@@ -5,7 +5,7 @@ description: Build or adapt a local harness to drive, inspect, and profile an in
 
 # Control CLI
 
-Ported from cursor-team-kit's `control-cli` (MIT, Cursor, commit d0ef80d) for Claude Code.
+Ported from cursor-team-kit's `control-cli` (MIT, Cursor, commit d0ef80d) for Claude Code. Changes: the harness goes in `/Volumes/Dock/tmp/<name>` in place of `/tmp`, since `~/.claude/CLAUDE.md` keeps scratch files off the small internal disk.
 
 Use a repeatable local harness to exercise an interactive CLI instead of poking at it manually. First reuse the repo's own test/demo harness if it exists; otherwise assemble a temporary harness from standard local tools.
 
@@ -106,6 +106,6 @@ If the CLI needs richer terminal control, use `pty.fork()` or an existing PTY li
 
 - Prefer deterministic waits over sleeps. If you must sleep, explain why.
 - Do not send credentials or destructive commands into a controlled session.
-- Keep the harness in `/tmp` unless the repo already has a testing/demo harness.
+- Keep the harness in `/Volumes/Dock/tmp/<name>` unless the repo already has a testing/demo harness.
 - Do not hard-code paths from another repository. Adapt commands to the current repo's scripts and runtime.
 - Clean up tmux sessions, temp dirs, inspector processes, and demo artifacts unless the user asks to keep them.
