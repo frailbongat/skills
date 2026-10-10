@@ -1,11 +1,11 @@
 ---
 name: verify-this
-description: "Verify a claim with fresh local evidence: restate it falsifiably, capture baseline and treatment, compare artifacts, and return VERIFIED, NOT VERIFIED, or INCONCLUSIVE."
+description: "Verify a claim with fresh local evidence: restate it falsifiably, run baseline and treatment on an input where their results must differ, and return VERIFIED, NOT VERIFIED, or INCONCLUSIVE. Use before reporting your own fix as verified, before overturning an earlier claim, or when the user asks for proof."
 ---
 
 # Verify This
 
-Ported from cursor-team-kit's `verify-this` (MIT, Cursor, commit d0ef80d) for Claude Code.
+Ported from cursor-team-kit's `verify-this` (MIT, Cursor, commit d0ef80d) for Claude Code. Changes: the description names when to use it, before reporting your own fix as verified or overturning an earlier claim, and asks for an input where baseline and treatment must differ, since the source description named no trigger and an agent called its fix checked on inputs where the old and new code give the same answer.
 
 Verification is not a recap. It proves or disproves a specific claim with repeatable evidence.
 
