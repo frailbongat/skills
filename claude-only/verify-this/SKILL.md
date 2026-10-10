@@ -5,7 +5,7 @@ description: "Verify a claim with fresh local evidence: restate it falsifiably, 
 
 # Verify This
 
-Ported from cursor-team-kit's `verify-this` (MIT, Cursor, commit d0ef80d) for Claude Code. Changes: the description names when to use it, before reporting your own fix as verified or overturning an earlier claim, and asks for an input where baseline and treatment must differ, since the source description named no trigger and an agent called its fix checked on inputs where the old and new code give the same answer. To fit that clause, the description says "run" in place of "capture" and drops "compare artifacts". Workflow steps 3 to 5 still capture and compare artifacts.
+Ported from cursor-team-kit's `verify-this` (MIT, Cursor, commit d0ef80d) for Claude Code. Changes: the description names when to use it, before reporting your own fix as verified or overturning an earlier claim, and asks for an input where baseline and treatment must differ, since the source description named no trigger and an agent called its fix checked on inputs where the old and new code give the same answer. To fit that clause, the description says "run" in place of "capture" and drops "compare artifacts". Workflow steps 3 to 5 still capture and compare artifacts. The artifacts go to `/Volumes/Dock/tmp/verify-this/` in place of `/tmp/verify-this/`, since `~/.claude/CLAUDE.md` keeps scratch files off the small internal disk.
 
 Verification is not a recap. It proves or disproves a specific claim with repeatable evidence.
 
@@ -41,7 +41,7 @@ Do not use this for vague claims like "the code is cleaner". Ask for a measurabl
 When safe to write artifacts:
 
 ```text
-/tmp/verify-this/<claim-slug>/
+/Volumes/Dock/tmp/verify-this/<claim-slug>/
 ├── claim.md
 ├── timeline.md
 ├── baseline/

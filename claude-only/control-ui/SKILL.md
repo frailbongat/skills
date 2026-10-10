@@ -5,7 +5,7 @@ description: Build or adapt a local browser/CDP harness to drive and inspect a w
 
 # Control UI
 
-Ported from cursor-team-kit's `control-ui` (MIT, Cursor, commit d0ef80d) for Claude Code.
+Ported from cursor-team-kit's `control-ui` (MIT, Cursor, commit d0ef80d) for Claude Code. Changes: the sample screenshots save under `/Volumes/Dock/tmp/` in place of `/tmp/`, since `~/.claude/CLAUDE.md` keeps scratch files off the small internal disk.
 
 Use local browser automation to verify UI behavior with evidence. First reuse the repo's own Playwright, browser, or Electron harness if it exists; otherwise assemble a temporary local harness around the app's dev server or Chromium debug port.
 
@@ -37,7 +37,7 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 await page.goto("http://127.0.0.1:<port>");
 await page.getByRole("button", { name: /submit/i }).click();
-await page.screenshot({ path: "/tmp/ui-harness-after.png", fullPage: true });
+await page.screenshot({ path: "/Volumes/Dock/tmp/ui-harness-after.png", fullPage: true });
 await browser.close();
 ```
 
@@ -68,7 +68,7 @@ if (!page) {
   throw new Error("No matching app page found");
 }
 
-await page.screenshot({ path: "/tmp/ui-harness-cdp.png", fullPage: true });
+await page.screenshot({ path: "/Volumes/Dock/tmp/ui-harness-cdp.png", fullPage: true });
 await browser.close();
 ```
 
