@@ -1,6 +1,6 @@
 ### Opening a PR
 
-<!-- Ported from pstack (MIT, Lauren Tan, commit d0ef80d). Changes: `Task` calls became subagents, and `/deslop` no longer names cursor-team-kit. -->
+<!-- Ported from pstack (MIT, Lauren Tan, commit d0ef80d). Changes: `Task` calls became subagents, and `/deslop` no longer names cursor-team-kit. A subagent that opens a PR names `interrogate` for its parent to launch in place of running it, since `paseo-delegation` says only the top session launches agents. -->
 
 Invoked at the end of every other playbook.
 
@@ -35,4 +35,4 @@ After these sections, attach videos or screenshots when they prove a claim. Do n
 
 **Babysit.** Opening a PR does not start a babysit. Post the URL and keep building. Finish the phase or stack first. Run a separate babysit pass only when the user asks for one after the whole stack exists. A babysit for each new PR stalls the build and spends checks on commits that later waves restart. Push back when feedback drifts from intent.
 
-A subagent that opens a PR runs `interrogate`, `/deslop`, and `/no-comments`, and posts the URL. Then it returns to the parent without babysitting, unless it is an Autopilot-full or Autopilot-stack owner. That owner's brief assigns the babysit loop and is the ask `playbooks/babysit.md` waits for. The owner starts the loop after its code-ready report and reports merge-ready or STACK-READY as its playbook says. The rules here and in `playbooks/babysit.md` that hold babysitting until a whole stack is built do not apply to that owner.
+A subagent that opens a PR runs `/deslop` and `/no-comments`, posts the URL, and names `interrogate` as the follow-up its parent launches. Then it returns to the parent without babysitting, unless it is an Autopilot-full or Autopilot-stack owner. That owner's brief assigns the babysit loop and is the ask `playbooks/babysit.md` waits for. The owner starts the loop after its code-ready report and reports merge-ready or STACK-READY as its playbook says. The rules here and in `playbooks/babysit.md` that hold babysitting until a whole stack is built do not apply to that owner.

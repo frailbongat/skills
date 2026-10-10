@@ -15,14 +15,17 @@
 #   - One name per line. Blank lines and # comments are ignored.
 #
 # Kept visible on purpose:
-#   design-taste-frontend         gossgroup.co wraps it in .pi/skills/gg-design
 #   impeccable                    broadest design entry point, covers the rest
-#   animate                       the only motion build skill
-#   emil-design-eng               gossgroup.co names it in component headers
-#   build-awwwards-quality-sites  gossgroup.co names it in component headers
 #   security-audit                vendored and patched, model-invoked so the agent
 #                                 reaches it when auth, input handling, or secrets
 #                                 come up (commit 9b604bd)
+
+# --- design skills gossgroup.co names, still reached by name ---
+# Hidden is fine, since ~/.claude/CLAUDE.md "Skills you cannot see" reads a named skill by path.
+design-taste-frontend
+animate
+emil-design-eng
+build-awwwards-quality-sites
 
 # --- design, near-duplicates of design-taste-frontend / impeccable ---
 high-end-visual-design
@@ -58,7 +61,6 @@ paseo-committee
 paseo-handoff
 
 # --- rarely used, no visible skill hands work to them ---
-# (paseo-help stays visible: the paseo skill names it)
 paseo-plugin
 wizard
 

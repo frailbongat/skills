@@ -84,7 +84,7 @@ Symlinks mean an edit in this repo reaches every agent at once, with no copy ste
 
 Every installed skill puts its name and its whole description in the system prompt of every session, before I have typed anything. At 44 visible skills that was about 5,100 tokens a session, and the design and animation cluster was about 3,100 of it. Worse than the cost, most of those entries say the same thing in different words, so the agent had eleven plausible answers to "make this look good" and picked badly.
 
-`hidden-skills.txt` lists the ones that stay installed but stop advertising themselves. `hide-skills.sh` stamps `disable-model-invocation: true` into each one's front matter, which is the pi and Agent Skills field for "do not put this in the system prompt". The first version hid twenty skills and got about 2,500 tokens back. The list now names 34.
+`hidden-skills.txt` lists the ones that stay installed but stop advertising themselves. `hide-skills.sh` stamps `disable-model-invocation: true` into each one's front matter, which is the pi and Agent Skills field for "do not put this in the system prompt". The first version hid twenty skills and got about 2,500 tokens back. The list now names 38.
 
 ```bash
 ./hide-skills.sh            # hide everything in the list
@@ -97,7 +97,7 @@ A hidden skill still works. Two ways to reach one:
 - `/skill:<name>` runs it, same as before
 - an agent reads `~/.agents/skills/<name>/SKILL.md` by path when something points it there
 
-Nothing pulls a hidden skill in on its own. That is the whole trade, so the list has two hard rules. Never hide a skill that a still-visible skill hands work to by name, and never hide one that a live project names in its own docs or prompts. `emil-design-eng` and `build-awwwards-quality-sites` were on the first draft of the list until `gossgroup.co` turned out to name both in its component headers.
+Nothing pulls a hidden skill in on its own. That is the whole trade, so the list has two hard rules. Never hide a skill that a still-visible skill hands work to by name, and never hide one that a live project names in its own docs or prompts. `emil-design-eng` and `build-awwwards-quality-sites` were on the first draft of the list until `gossgroup.co` turned out to name both in its component headers. Both are hidden now, along with `design-taste-frontend` and `animate`, since `~/.claude/CLAUDE.md` makes an agent read a named skill's `SKILL.md` by path.
 
 The Skills CLI rewrites `SKILL.md` from the source repo, so `npx skills add` and `npx skills update` both wipe the stamp. Re-run `./hide-skills.sh` after either. `sync.sh` is unaffected, it only reads descriptions.
 
