@@ -6,7 +6,10 @@
 # each worktree's sessions their own slug dir, where Cursor kept one dir per repo,
 # so the path match runs over the slug dirs of the main repo and every worktree,
 # and the newest chat in the worktree's own slug dir counts too. The path match uses grep -rl in place of rg -l, since rg is a
-# zsh function in Claude Code's shell here, not a binary bash can run.
+# zsh function in Claude Code's shell here, not a binary bash can run. A chat counts
+# only when a transcript line has a cwd at or under the worktree, or it made an Edit,
+# Write, or NotebookEdit call on a file there. A bare path match also counted chats
+# that only read, grepped, or discussed the path, which held worktrees from the prune.
 # Read-only worktree prune audit. Classifies every git worktree by size, merge
 # state, uncommitted work, remote/PR state, and the most recent chat that
 # operated in it. Emits a table sorted by size with a suggested bucket. Never
@@ -36,6 +39,13 @@ slug() { printf '%s' "$1" | sed 's#[^a-zA-Z0-9]#-#g'; }
 transcripts=$(git worktree list --porcelain | awk '/^worktree /{print $2}' | while read -r w; do
 	d="$HOME/.claude/projects/$(slug "$w")"; [ -d "$d" ] && printf '%s\n' "$d"; done)
 now=$(date +%s)
+
+# True when a transcript line has a cwd at or under $wt, or an Edit, Write, or
+# NotebookEdit tool call on a file at or under $wt.
+operated='def in_wt: type == "string" and (. == $wt or startswith($wt + "/"));
+any(inputs | fromjson? | objects; (.cwd | in_wt) or any(.message.content?[]? | objects
+	| select(.type == "tool_use" and (.name | IN("Edit", "Write", "NotebookEdit")));
+	(.input.file_path // .input.notebook_path) | in_wt))'
 
 printf "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n"
 
@@ -70,15 +80,17 @@ git worktree list --porcelain | awk '/^worktree /{print $2}' | while read -r wt;
 		'.[] | select(.headRefName==$b) | "#\(.number)/\(.state)"' "$prs" 2>/dev/null | head -1)
 	[ -z "$pr" ] && pr="-"
 
-	# Most recent chat whose transcript operated in this worktree. Match path
-	# followed by "/" or a quote so glint-482 does not match glint-482-r37.
-	# A session started inside the worktree writes to the worktree's own slug dir.
+	# Most recent chat whose transcript operated in this worktree. grep -F finds
+	# transcripts that name the path, then jq keeps those with a cwd or an edited
+	# file at the worktree or under it. The exact-or-"/" test keeps glint-482 from
+	# matching glint-482-r37. A session started inside the worktree writes to the
+	# worktree's own slug dir.
 	last="-"; last_ts=0
 	own="$HOME/.claude/projects/$(slug "$wt")"
-	f=$( { [ -n "$transcripts" ] && printf '%s\n' "$transcripts" | tr '\n' '\0' \
-			| xargs -0 grep -rl -e "${wt}/" -e "${wt}\"" 2>/dev/null
-		[ -d "$own" ] && find "$own" -name '*.jsonl' 2>/dev/null; } \
-		| xargs stat -f '%m %N' 2>/dev/null | sort -rn | head -1)
+	f=$( { [ -n "$transcripts" ] && printf '%s\n' "$transcripts"; [ -d "$own" ] && printf '%s\n' "$own"; } \
+		| sort -u | tr '\n' '\0' | xargs -0 grep -rlF --include='*.jsonl' -e "$wt" 2>/dev/null \
+		| while read -r t; do jq -nRe --arg wt "$wt" "$operated" "$t" >/dev/null 2>&1 && printf '%s\n' "$t"; done \
+		| tr '\n' '\0' | xargs -0 stat -f '%m %N' 2>/dev/null | sort -rn | head -1)
 	if [ -n "$f" ]; then last_ts=$(echo "$f" | awk '{print $1}')
 		last=$(date -r "$last_ts" '+%Y-%m-%d' 2>/dev/null); fi
 	recent=$([ "$last_ts" -gt 0 ] 2>/dev/null && [ $(( (now - last_ts) / 86400 )) -le 4 ] && echo yes || echo no)
