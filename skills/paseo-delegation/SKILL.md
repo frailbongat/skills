@@ -13,7 +13,7 @@ Keep the profile's model and thinking level. Override them only when a line in `
 - Docs, APIs, versions, and anything about the outside world goes to `researcher`.
 - Checking whether a research brief's claims hold up goes to `evidence-auditor`, never the agent that wrote the brief.
 - Implementation goes to `worker`. One writer per task.
-- Implementation that is UI work, cross-cutting design, concurrency, a subtle algorithm, or a fix round after a failed review goes to `worker-high`. UI work means screens, layout, styling, or anything checked with screenshots.
+- Implementation that is UI work, cross-cutting design, concurrency, or a subtle algorithm goes to `worker-high`. UI work means screens, layout, styling, or anything checked with screenshots.
 - Every diff, plan, or PR gets a fresh `reviewer` before I see it.
 - A decision that feels risky gets `oracle` before you act on it.
 - Security audits, vulnerability hunts, and pen-test requests go to `security-auditor`.
@@ -31,7 +31,7 @@ The third exception is a route playbook that will open a PR while my session sit
 
 ## Fresh agents
 
-Start a fresh agent for every task and every fix round, so each agent's context stays under 100k tokens. The `context-cap` hook in `~/.claude/settings.json` tells an agent past 100k to write a handoff to `/Volumes/Dock/tmp/handoffs/<session>.md` and stop. When a report names a handoff file, launch a fresh agent with the same profile and give it the handoff path as its brief. Brief it with file paths, commit hashes, and the findings to fix, and leave out the conversation that led there. Send a follow-up to a running agent only to answer a question it asked mid-task.
+Start a fresh agent for every task and every fix round, so each agent starts with a small context. Brief it with file paths, commit hashes, and the findings to fix, and leave out the conversation that led there. Send a follow-up to a running agent only to answer a question it asked mid-task.
 
 ## Only the top session launches agents
 

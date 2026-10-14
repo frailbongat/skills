@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Architect
 
-Ported from pstack's `architect` (MIT, Lauren Tan, commit d0ef80d) for Claude Code.
+Ported from pstack's `architect` (MIT, Lauren Tan, commit d0ef80d) for Claude Code. Changes: Phase A uses the traced model of a `how` run from earlier in the task over the same subsystem in place of a new run, to cut agent launches per task, the user's call on 2026-10-14.
 
 Design before implementing. Sketch types, function signatures, class shapes, and module boundaries with `not implemented` bodies and pseudocode. Synthesize across multiple model perspectives, then fill in code against the chosen sketch. If implementation proves the sketch wrong, throw it out and redesign.
 
@@ -22,7 +22,7 @@ Open a todolist with one entry per phase before starting.
 
 ## Phase A: Ground the problem
 
-Build a real mental model of every system the new code touches. Run the **how** skill over the relevant subsystems.
+Build a real mental model of every system the new code touches. Run the **how** skill over the relevant subsystems. When `how` already ran over a subsystem in this task, use its traced model in place of a new run.
 
 Naming a file isn't grounding. Produce the traced model `how` prescribes. If the design redefines ownership or layering, also run the **why** skill on the existing shape so the rationale becomes a constraint, not a guess.
 
