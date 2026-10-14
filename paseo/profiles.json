@@ -7,9 +7,9 @@
       "modeId": "auto",
       "model": "claude-sonnet-5-5",
       "name": "Scout",
-      "notes": "Fast local codebase recon before you understand the code. Returns relevant files with line ranges, entry points, key types, data flow, risks, and where to start. Read-only: it should not edit anything. Use it before planning or implementing in unfamiliar code. Optimized for speed (Sonnet 5.5, low thinking).\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/scout.md.\"",
+      "notes": "Fast local codebase recon before you understand the code. Returns relevant files with line ranges, entry points, key types, data flow, risks, and where to start. Read-only: it should not edit anything. Use it before planning or implementing in unfamiliar code. Optimized for speed (Sonnet 5.5, medium thinking).\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/scout.md.\"",
       "provider": "claude",
-      "thinkingOptionId": "low"
+      "thinkingOptionId": "medium"
     },
     {
       "color": "teal",
@@ -40,7 +40,18 @@
       "modeId": "auto",
       "model": "claude-opus-5-5",
       "name": "Worker",
-      "notes": "Implementation work, including approved plan/oracle handoffs. Edits files, follows existing patterns, makes the smallest correct change, validates, and escalates unapproved product or architecture decisions instead of guessing. Use it as the single writer thread for a task. Pair it with an isolated worktree workspace for parallel work. Opus 5.5 at high reasoning, the one profile whose long-horizon agentic coding earns the frontier model.\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/worker.md.\"",
+      "notes": "Implementation work, including approved plan/oracle handoffs. Edits files, follows existing patterns, makes the smallest correct change, validates, and escalates unapproved product or architecture decisions instead of guessing. Use it as the single writer thread for a task. Pair it with an isolated worktree workspace for parallel work. Opus 5.5 at medium reasoning, the default for well-scoped implementation. Hard tasks and UI work go to worker-high.\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/worker.md.\"",
+      "provider": "claude",
+      "thinkingOptionId": "medium"
+    },
+    {
+      "color": "orange",
+      "icon": "hammer",
+      "id": "worker-high",
+      "modeId": "auto",
+      "model": "claude-opus-5-5",
+      "name": "Worker (high)",
+      "notes": "The same implementation role as worker, at high reasoning on Opus 5.5. Use it for UI work (screens, layout, styling, or anything checked with screenshots), cross-cutting design, concurrency, subtle algorithms, and any fix round after a failed review.\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/worker.md.\"",
       "provider": "claude",
       "thinkingOptionId": "high"
     },
@@ -51,7 +62,7 @@
       "modeId": "auto",
       "model": "claude-opus-5-5",
       "name": "Reviewer",
-      "notes": "Independent review of a diff, plan, proposed solution, PR/issue, or overall codebase health. Read-only: reports evidence-backed P0/P1/P2 findings and a BLOCK / OK / OK-with-notes merge verdict, and says 'No issues found.' when nothing qualifies. Launch it fresh (separate agent from the implementer), and run several in parallel for correctness, tests, and unnecessary complexity.\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/reviewer.md.\"",
+      "notes": "Independent review of a diff, plan, proposed solution, PR/issue, or overall codebase health. Read-only: reports evidence-backed P0/P1/P2 findings and a BLOCK / OK / OK-with-notes merge verdict, and says 'No issues found.' when nothing qualifies. Launch it fresh (separate agent from the implementer), and launch one per diff. It checks correctness, tests, and unnecessary complexity in one pass, so the diff gets read once.\n\nStart the task prompt with: \"Follow the role brief in {{HOME}}/.paseo/agent-roles/reviewer.md.\"",
       "provider": "claude",
       "thinkingOptionId": "high"
     },

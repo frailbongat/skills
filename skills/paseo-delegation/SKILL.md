@@ -5,12 +5,15 @@ description: Route a task to the right Paseo subagent profile. Use before starti
 
 Read the **paseo** skill for the tool details. The profiles are already set up, so call `list_profiles` and materialize the one that fits into `create_agent`.
 
+Keep the profile's model and thinking level. Override them only when a line in `~/.claude/rules/pstack-models.md` names the role you are launching. `scout` and `researcher` always keep their profile settings.
+
 ## Which profile
 
 - Recon in code you have not read yet goes to `scout`.
 - Docs, APIs, versions, and anything about the outside world goes to `researcher`.
 - Checking whether a research brief's claims hold up goes to `evidence-auditor`, never the agent that wrote the brief.
 - Implementation goes to `worker`. One writer per task.
+- Implementation that is UI work, cross-cutting design, concurrency, a subtle algorithm, or a fix round after a failed review goes to `worker-high`. UI work means screens, layout, styling, or anything checked with screenshots.
 - Every diff, plan, or PR gets a fresh `reviewer` before I see it.
 - A decision that feels risky gets `oracle` before you act on it.
 - Security audits, vulnerability hunts, and pen-test requests go to `security-auditor`.
@@ -28,7 +31,7 @@ The third exception is a route playbook that will open a PR while my session sit
 
 ## Fresh agents
 
-Start a fresh agent for every task and every fix round, so each agent's context stays under 150k tokens. Brief it with file paths, commit hashes, and the findings to fix, and leave out the conversation that led there. Send a follow-up to a running agent only to answer a question it asked mid-task.
+Start a fresh agent for every task and every fix round, so each agent's context stays under 120k tokens. The `context-cap` hook in `~/.claude/settings.json` tells an agent past 120k to write a handoff to `/Volumes/Dock/tmp/handoffs/<session>.md` and stop. When a report names a handoff file, launch a fresh agent with the same profile and give it the handoff path as its brief. Brief it with file paths, commit hashes, and the findings to fix, and leave out the conversation that led there. Send a follow-up to a running agent only to answer a question it asked mid-task.
 
 ## Only the top session launches agents
 
@@ -38,7 +41,9 @@ The reason: Paseo tells a parent only that its child's turn ended. A subagent th
 
 ## Running them
 
-Run agents in parallel when their tasks do not depend on each other. Launch several reviewers at once for correctness, tests, and unnecessary complexity.
+Run agents in parallel when their tasks do not depend on each other. Launch one reviewer per diff, and brief it to check correctness, tests, and unnecessary complexity in one pass. Each extra reviewer rereads the same diff. Skills that run a panel on purpose, such as `interrogate` and `arena`, keep their panels.
+
+When 2 or more agents will work in the same code, run one `scout` first and tell it to write its Code Context to `/Volumes/Dock/tmp/recon/<task>.md`. Name that file in every later brief, and tell the agent to read it before the source and to open only the files it needs beyond it. Read the file yourself instead of the source it covers. In my history, 35% of what child agents read, a sibling agent had already read.
 
 Each agent starts with zero context, so make the briefing self-contained. Name files by path and let the agent read them instead of pasting their contents. Name a finished agent's report as "the last activity of Paseo agent <id>". The agent reads it with `get_agent_activity` and `limit: 1`, which returns the full final report.
 
