@@ -1,11 +1,11 @@
 ### Feature
 
-<!-- Ported from pstack (MIT, Lauren Tan, commit d0ef80d). Changes: the default feature model became `claude-fable-5-1` at xhigh thinking. -->
+<!-- Ported from pstack (MIT, Lauren Tan, commit d0ef80d). Changes: the default feature model became `claude-fable-5-1` at xhigh thinking. Step 2 runs `architect` only when step 1's `how` shows more than one valid shape, to cut agent launches per task, the user's call on 2026-10-14. -->
 
 **You own the design. Plan, review, verify.** Delegate implementation. Stay in the lead.
 
 1. `how` over the affected subsystem.
-2. `architect` for parallel design exploration.
+2. When step 1's `how` shows more than one valid shape, `architect` for parallel design exploration.
 3. Write the throughput checkpoint as four todo items. A dimension that genuinely does not apply (single file, no fan-out) keeps its item with `n/a: <reason>` rather than being dropped:
    - **Blocking first steps.** Gates run before fan-out.
    - **Independent workstreams.** Disjoint files, services, or layers parallelize. Shared writes serialize.
