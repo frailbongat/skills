@@ -4,13 +4,13 @@ description: "Review gate for a PR a /route playbook opened. The top session run
 disable-model-invocation: true
 ---
 
-After a playbook opens a PR, get it a fresh review before your final reply. Only the top session does this. A subagent that opens a PR names `/no-comments`, `interrogate` when Feature step 7 marked the design contested, and the reviewer it needs in its report and hands back.
+After a playbook opens a PR, get it a fresh review before your final reply. Only the top session does this. A subagent that opens a PR names `/no-comments`, `interrogate` when the design is contested and Feature step 7 has not already run it, and the reviewer it needs in its report and hands back.
 
 Skip this in Autopilot-full and Autopilot-stack, which verify each PR with their own swarm.
 
 Add the review as the last task in the playbook todo list, then run these steps in order.
 
-1. Run `/no-comments`. Run `interrogate` after it only when Feature step 7 in `~/.claude/skills/route/playbooks/feature.md` marked the design contested. Fix their findings, so the fresh `reviewer` is the last gate.
+1. Run `/no-comments`. Run `interrogate` after it only when the design is contested and Feature step 7 in `~/.claude/skills/route/playbooks/feature.md` has not already run it. Fix their findings, so the fresh `reviewer` is the last gate.
 2. Launch a new Paseo `reviewer` on the PR. Its brief asks it to answer 4 questions with yes, no, or n/a, each with a link or a quote as proof:
    - Does the failing test commit come before the fix commit?
    - Does each number the PR claims match its source?
