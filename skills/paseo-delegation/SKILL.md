@@ -13,7 +13,7 @@ Keep the profile's model and thinking level. Override them only when a line in `
 - Docs, APIs, versions, and anything about the outside world goes to `researcher`.
 - Checking whether a research brief's claims hold up goes to `evidence-auditor`, never the agent that wrote the brief.
 - Implementation goes to `worker`. One writer per task.
-- Implementation that is UI work, cross-cutting design, concurrency, a subtle algorithm, or a fix round after a failed review goes to `worker-high`. UI work means screens, layout, styling, or anything checked with screenshots.
+- Implementation that is UI work, cross-cutting design, concurrency, or a subtle algorithm goes to `worker-high`. UI work means screens, layout, styling, or anything checked with screenshots.
 - Every diff, plan, or PR gets a fresh `reviewer` before I see it.
 - A decision that feels risky gets `oracle` before you act on it.
 - Security audits, vulnerability hunts, and pen-test requests go to `security-auditor`.
