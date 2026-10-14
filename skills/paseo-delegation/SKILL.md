@@ -31,7 +31,7 @@ The third exception is a route playbook that will open a PR while my session sit
 
 ## Fresh agents
 
-Start a fresh agent for every task and every fix round, so each agent's context stays under 100k tokens. The `context-cap` hook in `~/.claude/settings.json` tells an agent past 100k to write a handoff to `/Volumes/Dock/tmp/handoffs/<session>.md` and stop. When a report names a handoff file, launch a fresh agent with the same profile and give it the handoff path as its brief. Brief it with file paths, commit hashes, and the findings to fix, and leave out the conversation that led there. Send a follow-up to a running agent only to answer a question it asked mid-task.
+Start a fresh agent for every task and every fix round, so each agent starts with a small context. Brief it with file paths, commit hashes, and the findings to fix, and leave out the conversation that led there. Send a follow-up to a running agent only to answer a question it asked mid-task.
 
 ## Only the top session launches agents
 
