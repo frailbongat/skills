@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 After a playbook opens a PR, get it a fresh review before your final reply. Only the top session does this. A subagent that opens a PR names `/no-comments`, `interrogate` when the design is contested and Feature step 7 has not already run it, and the reviewer it needs in its report and hands back.
 
-Skip this in Autopilot-full and Autopilot-stack, which verify each PR with their own swarm.
+Skip this in Autopilot-full and Autopilot-stack, which verify each PR with their own verifier.
 
 Add the review as the last task in the playbook todo list, then run these steps in order.
 
