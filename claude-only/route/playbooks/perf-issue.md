@@ -17,6 +17,17 @@
 
    When an earlier mantra meets the target, stop.
 3. Plan the fix from the trace. If it crosses a function boundary, `architect` first. Delegate implementation to a subagent using your configured perf-issue model (default `claude-fable-5-1` at xhigh thinking). Review the diff. Capture a post-fix trace.
+   Every brief you send that subagent ends with this block, pasted verbatim:
+
+   ```
+   HARD RULE — never print a secret:
+   - No cat/grep/head/tail/less/sed on `.env*` or `~/.config/litflows-secrets/*`, even through a redactor.
+   - No env, printenv, export -p, set -x, or process.env logging.
+   - No ariaSnapshot, page.content(), HTML dumps or traces of a page with a filled password field.
+   - No `convex env get` on a secret; use `convex env list | grep -c '^NAME'`.
+   - Check keys only with `grep -c '^NAME=' <file>` or `test -n "$NAME"`.
+   - If something leaks, stop and name the key, never the value.
+   ```
    Apply the **sequence-verifiable-units** principle skill, verifying each attempt before trying the next.
 4. Parse and compare the artifacts (JSON to sqlite, diff). "Inconclusive" or wrong-surface is not a pass. Flag it.
 5. Cite the measurement in the PR.
