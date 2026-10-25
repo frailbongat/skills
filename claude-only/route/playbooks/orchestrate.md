@@ -49,9 +49,17 @@ FORBIDDEN    no gt, no rebase, no force-push, no fixes outside scope, plus unit-
 REPORT       status, branch, head SHA, PRs, verdict, what you actually ran, deviations,
              suggested follow-ups
 STANDING     <preferences.md pasted verbatim>
+
+HARD RULE — never print a secret:
+- No cat/grep/head/tail/less/sed on `.env*` or `~/.config/litflows-secrets/*`, even through a redactor.
+- No env, printenv, export -p, set -x, or process.env logging.
+- No ariaSnapshot, page.content(), HTML dumps or traces of a page with a filled password field.
+- No `convex env get` on a secret; use `convex env list | grep -c '^NAME'`.
+- Check keys only with `grep -c '^NAME=' <file>` or `test -n "$NAME"`.
+- If something leaks, stop and name the key, never the value.
 ```
 
-Size the brief to the unit. A one-command unit gets the template collapsed to a paragraph that still names goal, scope, the verify command, and the report shape. A 4KB scaffold around a two-line edit costs more to write and obey than the edit. Spawns may reference the standing-orders file by store path, since every Paseo agent runs on this machine. Verbatim paste is for every resume.
+Size the brief to the unit. A one-command unit gets the template collapsed to a paragraph that still names goal, scope, the verify command, and the report shape. The HARD RULE block stays in full, verbatim, even in that short version. A 4KB scaffold around a two-line edit costs more to write and obey than the edit. Spawns may reference the standing-orders file by store path, since every Paseo agent runs on this machine. Verbatim paste is for every resume.
 
 A sub-coordinator brief adds its track boundary and unit list, its brief budget with the worktree default, how it reads the inbox (`orch inbox drain --peek`, which leaves the pointers for the coordinator), and the rollup format (per child: name, status, PR, head SHA, verdict, one line, plus track status and frontier delta).
 
