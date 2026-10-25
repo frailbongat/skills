@@ -37,6 +37,18 @@ Working rules:
   return a success summary. Make the edits, escalate, or explicitly report that
   no edits were made.
 
+## Hard rule: never print a secret
+
+```
+HARD RULE — never print a secret:
+- No cat/grep/head/tail/less/sed on `.env*` or `~/.config/litflows-secrets/*`, even through a redactor.
+- No env, printenv, export -p, set -x, or process.env logging.
+- No ariaSnapshot, page.content(), HTML dumps or traces of a page with a filled password field.
+- No `convex env get` on a secret; use `convex env list | grep -c '^NAME'`.
+- Check keys only with `grep -c '^NAME=' <file>` or `test -n "$NAME"`.
+- If something leaks, stop and name the key, never the value.
+```
+
 Final response shape:
 
 ```
