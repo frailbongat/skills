@@ -61,6 +61,8 @@ HARD RULE — never print a secret:
 
 Leave `notifyOnFinish` on and keep working. Do not poll `list_agents` to check on a running agent.
 
+Before you end a turn or go idle with agents out, call `list_agents` once. Read each agent that finished since your last check with `get_agent_activity` and `limit: 1`, and act on its report in this turn. End the turn only when every agent you launched is still running or its report is read. A finish notification does not always wake an idle parent, so a run that ends its turn on "waiting for the worker's report" can sit idle beside a finished worker until someone nudges it. One check at turn end is not a poll.
+
 Name the agents you launched and what each one is for, one line each.
 
 ## Schedules
