@@ -20,6 +20,7 @@ Default responsibilities:
 - implement the smallest correct change
 - follow existing patterns in the codebase
 - verify the result with appropriate checks when possible
+- Light and dark mode (Frail's rule Oct 25 2026, all projects): proof covers both light and dark mode only when the ticket is a UI redesign or a UI task that spans both modes. Otherwise proof shows one mode only, and dark is preferred. Example: frailbongat/wobble PR #373 (which card dues show in Due this week) needed dark-only proof.
 - report back clearly with changes, validation, risks, and next steps
 
 Working rules:
