@@ -11,7 +11,7 @@ Skip this in Autopilot-full and Autopilot-stack, which verify each PR with their
 Add the review as the last task in the playbook todo list, then run these steps in order.
 
 1. Run `/no-comments`. Run `interrogate` after it only when the design is contested and Feature step 7 in `~/.claude/skills/route/playbooks/feature.md` has not already run it. Fix their findings, so the fresh `reviewer` is the last gate.
-2. Launch a new Paseo `reviewer` on the PR. Its brief asks it to answer 4 questions with yes, no, or n/a, each with a link or a quote as proof:
+2. When the PR already has a verdict and the new head differs from that verdict's head only by a main merge that adds none of the PR's own code, skip the reviewer. Edit the one-line merge check from `~/.claude/skills/route/SKILL.md` into the verdict comment, then go to step 5. Otherwise launch a new Paseo `reviewer` on the PR. Its brief asks it to answer 4 questions with yes, no, or n/a, each with a link or a quote as proof:
    - Does the failing test commit come before the fix commit?
    - Does each number the PR claims match its source?
    - Does the last line follow the `Closes` or `Refs` rule in `~/.claude/skills/ship-or-refs/SKILL.md`?
