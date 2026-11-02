@@ -2,9 +2,10 @@
 # Shared reader for reference-skill-lock.json. Source this, then call lock_rows.
 #
 # lock_rows <lock-file> prints one tab-separated row per skill:
-#   name  source  sourceType  sourceUrl  skillPath
+#   name  source  sourceType  sourceUrl  skillPath  ref
 # Sorted by name. skillPath is the skill's path inside its repo, which is what
-# names the plugin when one repo holds several.
+# names the plugin when one repo holds several. ref is the pinned commit or
+# branch, empty for a skill that follows the repo's default branch.
 
 lock_rows() {
   local lock_file="$1"
@@ -14,7 +15,7 @@ lock_rows() {
       .skills
       | to_entries
       | sort_by(.key)[]
-      | [.key, (.value.source // ""), (.value.sourceType // ""), (.value.sourceUrl // ""), (.value.skillPath // "")]
+      | [.key, (.value.source // ""), (.value.sourceType // ""), (.value.sourceUrl // ""), (.value.skillPath // ""), (.value.ref // "")]
       | @tsv
     ' "$lock_file"
   elif command -v python3 >/dev/null 2>&1; then
@@ -23,7 +24,7 @@ import json, sys
 lock = json.load(open(sys.argv[1]))
 for name in sorted(lock["skills"]):
     entry = lock["skills"][name]
-    fields = [name, entry.get("source", ""), entry.get("sourceType", ""), entry.get("sourceUrl", ""), entry.get("skillPath", "")]
+    fields = [name, entry.get("source", ""), entry.get("sourceType", ""), entry.get("sourceUrl", ""), entry.get("skillPath", ""), entry.get("ref", "")]
     print("\t".join(fields))
 ' "$lock_file"
   else
@@ -32,18 +33,19 @@ for name in sorted(lock["skills"]):
   fi
 }
 
-# install_args <name> <source> <sourceType> <sourceUrl> <skillPath> prints the
-# arguments to pass to `npx skills add`. GitHub skills use the short
-# owner/repo@skill form; anything else falls back to the clone URL plus --skill.
+# install_args <name> <source> <sourceType> <sourceUrl> <skillPath> [ref] prints
+# the arguments to pass to `npx skills add`. GitHub skills use the short
+# owner/repo@skill form, or owner/repo#ref@skill when pinned; anything else
+# falls back to the clone URL plus --skill.
 # A skill at <plugin>/skills/<name>/ sits inside a plugin, the same rule sync.sh
 # uses, and needs --full-depth: without it, `npx skills add cursor/plugins@tdd`
 # fails and lists only the 2 skills outside pstack.
 install_args() {
-  local name="$1" source="$2" source_type="$3" source_url="$4" skill_path="$5"
+  local name="$1" source="$2" source_type="$3" source_url="$4" skill_path="$5" ref="${6:-}"
   local args
 
   if [[ "$source_type" == "github" && "$source" == */* ]]; then
-    args="$source@$name"
+    args="$source${ref:+#$ref}@$name"
   elif [[ -n "$source_url" ]]; then
     args="$source_url --skill $name"
   else
