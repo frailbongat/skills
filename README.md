@@ -104,7 +104,7 @@ The Skills CLI rewrites `SKILL.md` from the source repo, so `npx skills add` and
 
 ## Skills I did not write
 
-Forty five skills sit in `~/.agents/skills` that are not mine. Forty one come from the [Skills CLI](https://skills.sh), which records them in `~/.agents/.skill-lock.json`, and those forty one are the tables below, one per repo they came from:
+Forty six skills sit in `~/.agents/skills` that are not mine. Forty two come from the [Skills CLI](https://skills.sh), which records them in `~/.agents/.skill-lock.json`, and those forty two are the tables below, one per repo they came from:
 
 <!-- skills:start -->
 
@@ -177,6 +177,12 @@ row with `npx skills add <from>@<skill> -g -y`, or all of them with
 | Skill | What it does |
 | --- | --- |
 | `build-awwwards-quality-sites` | Art-direct and implement distinctive, motion-rich marketing, editorial, portfolio, and landing websites with original reference-inspired imagery, standout heroes, GSAP choreography, one smooth-scroll engine, optional Three.js shaders, honest icon and logo sourcing, photo avatars, accessibility, and performance safeguards. |
+
+### [nutlope/hallmark](https://github.com/nutlope/hallmark), 1 skill
+
+| Skill | What it does |
+| --- | --- |
+| `hallmark` | Design skill for websites and new pages that look designed, not generated. |
 
 ### [vercel-labs/skills](https://github.com/vercel-labs/skills), 1 skill
 

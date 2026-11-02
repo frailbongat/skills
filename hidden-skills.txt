@@ -30,6 +30,7 @@ design-taste-frontend
 animate
 emil-design-eng
 build-awwwards-quality-sites
+hallmark
 
 # --- design, near-duplicates of design-taste-frontend / impeccable ---
 high-end-visual-design

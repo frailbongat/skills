@@ -385,6 +385,17 @@
       "skillFolderHash": "1064da72ceca07bf7f36bddebada585bb59da7bc",
       "installedAt": "2026-10-10T15:06:48.351Z",
       "updatedAt": "2026-10-10T15:06:48.351Z"
+    },
+    "hallmark": {
+      "source": "nutlope/hallmark",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/nutlope/hallmark.git",
+      "ref": "4f6a46c6dc325d40ab268c93e25c7b96676ebccd",
+      "skillPath": "skills/hallmark/SKILL.md",
+      "skillFolderHash": "4d374666c460b7b4bdfd591301976c15a2f2c19b",
+      "pluginName": "hallmark",
+      "installedAt": "2026-11-02T13:14:28.174Z",
+      "updatedAt": "2026-11-02T13:15:00.381Z"
     }
   },
   "dismissed": {
