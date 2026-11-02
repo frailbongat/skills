@@ -24,7 +24,7 @@ Report: platform, owner file (or "new"), view file, target `_variants/` folder, 
 
 ## Variant brief
 
-Send one per skill. `<ids>` is `<skill>-1 and <skill>-2`, or `<skill>-1` alone with per-skill 1. Keep the bold `<skill>-2` line only when `<ids>` holds a `-2`.
+Send one per skill. `<ids>` is `<skill>-1 and <skill>-2`, or `<skill>-1` alone with per-skill 1. Keep the bold `<skill>-2` line only when `<ids>` holds a `-2`. For `hallmark`, add the Hallmark rule below the brief to its Rules list.
 
 ```
 Build <ids>, design variants of <target> in <repo-path>, with the <skill> design skill. Other workers build other variants in this checkout at the same time, so write only the files named below.
@@ -50,4 +50,10 @@ Rules:
 Done when every file for <ids> exists, `<typecheck-command>` shows no errors in your files, and your files import only the UI framework, the platform, existing project modules, and existing dependencies.
 
 Report: each variant id, its direction in one line, and what it changes from the incumbent.
+```
+
+The Hallmark rule:
+
+```
+- For a screen someone works in, follow "App screens" in Hallmark's references/flow.md. Skip Hallmark's question, theme deal, and log, and never run its imagegen.mjs. The brand lock replaces any theme Hallmark would deal. Write nothing under `.hallmark/`.
 ```

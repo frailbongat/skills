@@ -10,7 +10,7 @@ An **exploration** builds several **variants** of one **target**, a screen or a 
 
 The first argument picks the mode:
 
-- `/design-explore <target and options, in plain English>` explores. Follow the steps below. The target is any screen or component, for example `the account screen` or `the pricing card on the home page`. Read two options from the user's words: **per-skill**, 1 or 2 variants per skill (a total sets it as total divided by the number of skills, so "4 variants" with all four skills means 1), and **skills**, which design skills run ("skip awwwards" drops it). When the words leave the count unclear, such as a total that is not 1 or 2 times the number of skills, ask before step 2.
+- `/design-explore <target and options, in plain English>` explores. Follow the steps below. The target is any screen or component, for example `the account screen` or `the pricing card on the home page`. Read two options from the user's words: **per-skill**, 1 or 2 variants per skill (a total sets it as total divided by the number of skills, so "4 variants" with all four skills means 1), and **skills**, which design skills run ("skip hallmark" drops it). When the words leave the count unclear, such as a total that is not 1 or 2 times the number of skills, ask before step 2.
 - `/design-explore mix <notes>` mixes, and so do notes the user sends after step 7 on what they like in each variant. Read [MIX.md](MIX.md) and follow it instead.
 - `/design-explore lock <variant-id> [steal notes]` locks, for example `lock taste-2 use the header motion from emil-1`. Read [LOCK.md](LOCK.md) and follow it instead.
 
@@ -26,14 +26,19 @@ The first argument picks the mode:
 - **`<ext>`.** The file extension of the view, every variant, and the index file: `astro` on Astro, `svelte` on SvelteKit, and `tsx` everywhere else.
 - **`_variants/`.** The one folder name for every exploration file, so cleanup greps for one name. The **shared folder**, `_variants/` where the platform file puts it, holds the switcher and `state.json`. Each target has its own `_variants/` beside its view.
 
-The design skills, keyed by the names the user may say. The default runs all four with per-skill 2, 8 variants.
+The design skills, keyed by the names the user may say. The default runs `impeccable`, `taste`, `emil`, and the fourth source with per-skill 2, 8 variants.
+
+Fourth source: `hallmark`
 
 | Key | SKILL.md |
 | --- | --- |
 | `impeccable` | `~/.claude/skills/impeccable/SKILL.md` |
 | `taste` | `~/.agents/skills/design-taste-frontend/SKILL.md` |
 | `emil` | `~/.agents/skills/emil-design-eng/SKILL.md` |
+| `hallmark` | `~/.agents/skills/hallmark/SKILL.md` |
 | `awwwards` | `~/.agents/skills/build-awwwards-quality-sites/SKILL.md` |
+
+The `Fourth source` line is the switch. It names `hallmark` or `awwwards`, and the other key does not run. To bring awwwards back, make that one line read ``Fourth source: `awwwards` ``. A default run then builds `awwwards-1` and `awwwards-2` in place of `hallmark-1` and `hallmark-2`. [HALLMARK.md](HALLMARK.md) covers install and scoring.
 
 ## Explore
 
@@ -41,9 +46,9 @@ Platform details live in [WEB.md](WEB.md) for Next.js App Router and plain React
 
 ### 1. Clean tree
 
-Run `git status --porcelain`. If it prints anything, ask the user how to handle those changes and wait, so the explore commit in step 6 holds only exploration files.
+Run `git status --porcelain`. If it prints anything, ask the user how to handle those changes and wait, so the explore commit in step 6 holds only exploration files. Then run `~/.claude/skills/design-explore/check-hallmark.sh`, since step 7 scores with Hallmark's linter whichever source the switch names. If it fails, install what it names, as HALLMARK.md says.
 
-Done when `git status --porcelain` prints nothing.
+Done when `git status --porcelain` prints nothing and the check prints `PASS`.
 
 ### 2. Scout
 
@@ -99,7 +104,7 @@ Done when the view file imports no data fetching, store, or navigation code, its
          "ownerFile": "src/app/(tabs)/profile.tsx",
          "viewFile": "src/features/profile/ProfileView.tsx",
          "variantsDir": "src/features/profile/_variants",
-         "variantIds": ["current", "impeccable-1", "impeccable-2", "taste-1", "taste-2", "emil-1", "emil-2", "awwwards-1", "awwwards-2"]
+         "variantIds": ["current", "impeccable-1", "impeccable-2", "taste-1", "taste-2", "emil-1", "emil-2", "hallmark-1", "hallmark-2"]
        }
      ]
    }
@@ -126,8 +131,9 @@ Done when the typecheck exits 0 and `git status --porcelain` prints nothing.
 The user chooses the winner, and your **pick** is the recommendation they read first. Base it on the rendered UI, since code hides the spacing, hierarchy, and overflow a screenshot shows.
 
 1. Screenshot `current` and every variant as the platform file's "Capturing a variant" section says. Save the files in a `design-explore/<slug>/` folder inside the scratch folder your agent rules name, or in `/tmp/design-explore/<slug>/` when they name none, outside the repo, and open every one with `read`. When the app will not run, ask the user to start it and wait.
-2. Read each variant's motion code, since a screenshot shows no motion.
-3. Pick the variant that best does what the `## Target` section of `brief.md` asks, inside the brand lock. Then list the **steals**, specific parts of other variants worth moving into the pick, such as a header, an empty state, or an entrance animation, each named with its variant id.
-4. Tell the user how to switch, using the platform file's section for it. Then give the pick with a reason of two lines or fewer, the steals, and the lock command with both filled in, such as `/design-explore lock taste-2 use the header motion from emil-1`. Add that they can reply with what they like in each variant to get a mix.
+2. Score every id in `variantIds` with Hallmark's linter, as the "Score a variant" section of HALLMARK.md says.
+3. Read each variant's motion code, since a screenshot shows no motion.
+4. Pick the variant that best does what the `## Target` section of `brief.md` asks, inside the brand lock. Then list the **steals**, specific parts of other variants worth moving into the pick, such as a header, an empty state, or an entrance animation, each named with its variant id.
+5. Tell the user how to switch, using the platform file's section for it. Then give the score table, the pick with a reason of two lines or fewer, the steals, and the lock command with both filled in, such as `/design-explore lock taste-2 use the header motion from emil-1`. Add that they can reply with what they like in each variant to get a mix.
 
-Done when you have opened a screenshot of every id in `variantIds`, `git status --porcelain` prints nothing, and the user has the switch instructions, the pick, the steals, and the filled lock command.
+Done when you have opened a screenshot of every id in `variantIds`, every id has fail and warn counts, `git status --porcelain` prints nothing, and the user has the switch instructions, the score table, the pick, the steals, and the filled lock command.

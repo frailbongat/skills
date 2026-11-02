@@ -26,3 +26,4 @@ The switcher shows the first key in `variants` when nothing is picked, so captur
 
 - Motion runs on Reanimated when the project depends on `react-native-reanimated`, and on React Native's `Animated` otherwise. Honor the reduce motion setting through Reanimated's `useReducedMotion` or `AccessibilityInfo.isReduceMotionEnabled()`.
 - The `awwwards` variants keep that skill's bold, motion-led spirit and build it with Reanimated. GSAP, smooth-scroll libraries, and Three.js are web libraries and stay out of native code.
+- The `hallmark` variants use that skill's "App screens" rules and build them with React Native primitives. Its CSS stamp has no place in a file with no CSS.
