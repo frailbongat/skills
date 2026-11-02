@@ -34,9 +34,7 @@ for name in sorted(lock["skills"]):
 }
 
 # install_args <name> <source> <sourceType> <sourceUrl> <skillPath> [ref] prints
-# the arguments to pass to `npx skills add`. GitHub skills use the short
-# owner/repo@skill form, or owner/repo#ref@skill when pinned; anything else
-# falls back to the clone URL plus --skill.
+# the arguments to pass to `npx skills add`.
 # A skill at <plugin>/skills/<name>/ sits inside a plugin, the same rule sync.sh
 # uses, and needs --full-depth: without it, `npx skills add cursor/plugins@tdd`
 # fails and lists only the 2 skills outside pstack.

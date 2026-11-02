@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-# Exits 0 only when /design-explore can find Hallmark at the pin and score with it.
-# Compares the lock, not SKILL.md bytes, because hide-skills.sh stamps SKILL.md.
 set -uo pipefail
 
 PIN="4f6a46c6dc325d40ab268c93e25c7b96676ebccd"
-FOLDER_HASH="4d374666c460b7b4bdfd591301976c15a2f2c19b"
+LOCKED_FOLDER_HASH="4d374666c460b7b4bdfd591301976c15a2f2c19b"
 SKILL_DIR="$HOME/.agents/skills/hallmark"
 LOCK="$HOME/.agents/.skill-lock.json"
 LINT="$SKILL_DIR/scripts/sloplint.mjs"
@@ -35,7 +33,7 @@ lock_field() {
 ref="$(lock_field ref)"
 hash="$(lock_field skillFolderHash)"
 if [[ "$ref" == "$PIN" ]]; then pass "lock ref is the pin"; else fail "lock ref is '${ref}', want $PIN"; fi
-if [[ "$hash" == "$FOLDER_HASH" ]]; then pass "lock folder hash matches"; else fail "lock folder hash is '${hash}', want $FOLDER_HASH"; fi
+if [[ "$hash" == "$LOCKED_FOLDER_HASH" ]]; then pass "lock folder hash matches"; else fail "lock folder hash is '${hash}', want $LOCKED_FOLDER_HASH"; fi
 
 sample="$(mktemp -d)"
 trap 'rm -rf "$sample"' EXIT
