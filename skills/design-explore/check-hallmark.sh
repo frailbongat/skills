@@ -19,8 +19,9 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
-major="$(node -p 'process.versions.node.split(".")[0]')"
-if [[ "$major" -ge 18 ]]; then pass "node $major"; else fail "node $major, need 18 or newer"; fi
+version="$(node -p process.versions.node)"
+IFS=. read -r major minor _ <<< "$version"
+if (( major > 22 || (major == 22 && minor >= 20) )); then pass "node $version"; else fail "node $version, need 22.20 or newer"; fi
 
 if [[ -z "${TOGETHER_API_KEY:-}" ]]; then pass "TOGETHER_API_KEY unset"; else fail "TOGETHER_API_KEY is set, unset it"; fi
 

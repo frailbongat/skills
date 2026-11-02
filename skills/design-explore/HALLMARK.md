@@ -4,7 +4,7 @@ Hallmark is pinned to commit `4f6a46c6dc325d40ab268c93e25c7b96676ebccd` of `nutl
 
 ## Install
 
-Run these outside any repo. They need Node 18 or newer.
+Run these outside any repo. They need Node 22.20 or newer, because `skills@1.7.4` requires it.
 
 ```sh
 env -u CLAUDE_CONFIG_DIR DISABLE_TELEMETRY=1 DO_NOT_TRACK=1 npx --yes skills@1.7.4 add "nutlope/hallmark#4f6a46c6dc325d40ab268c93e25c7b96676ebccd" -g -a claude-code universal -y </dev/null
