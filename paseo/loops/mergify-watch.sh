@@ -1,33 +1,38 @@
 #!/usr/bin/env bash
-# Mergify drop watcher. Plain bash, jq, gh, and curl, no model calls.
-# Read-only gh only: it never comments on or changes a PR.
-#
 # How Mergify shows queue state on Project-Lit/litflows (checked 2026-10-28):
 #  - Check run "Mergify Merge Queue" on the PR head is IN_PROGRESS or QUEUED
 #    while queued, COMPLETED+SUCCESS when merged (#921), COMPLETED+NEUTRAL
 #    when dropped (#970).
-#  - mergify[bot] keeps one edited "Mergify Payload" comment holding JSON:
-#    {"state":"merged"|"dequeued"|..., "dequeue_reason":{"code","message"}}.
-#    Any "dequeued" counts as a drop (#970 CONFLICT_WITH_BASE_BRANCH,
-#    #1085 PR_DEQUEUED, CI failures CHECKS_FAILED).
-#
-# Each tick: one `gh pr list` of all open PRs. An open PR whose queue check is
-# queued or checking goes into seen.json. For each PR in seen.json: not open
-# means drop it from seen.json; check COMPLETED+SUCCESS means nothing; check
-# COMPLETED with another conclusion, or no check, means one read of the PR's
-# comments, and a payload state of "dequeued" fires one failed event. state.json
-# keys each event by PR, head sha, and reason, and is written only after the
-# POST succeeds, so a failed POST retries next tick. A gh error is logged and
-# retried next tick, and never fires.
-#
-#   mergify-watch.sh [--once]
-#
-# Env: MW_REPO (Project-Lit/litflows), MW_INTERVAL (300), PASEO_LOOPS_HOME
-# (~/.paseo/loops), PASEO_RELAY_URL and PASEO_RELAY_AUTH (see relay.sh).
-# Test hook: MW_FIXTURES=<dir> reads list.json (gh pr list output) and
-# comments_<n>.json (comments array) from <dir>, and appends one line to
-# <dir>/calls per gh call.
+#  - mergify[bot] posts "Mergify Payload" comments holding JSON:
+#    {"state":"merged"|"dequeued"|..., "left_at":..., "dequeue_reason":{"code","message"}}.
+#    A PR can carry more than one (#970 and #1085 each have two), so the watcher
+#    reads the newest by updated_at. Any "dequeued" counts as a drop, whatever
+#    the code (CONFLICT_WITH_BASE_BRANCH, PR_DEQUEUED, CHECKS_FAILED).
 set -u
+
+usage() {
+  cat >&2 <<'EOF'
+usage: mergify-watch.sh [--once]
+
+Watches the Mergify merge queue with read-only gh and fires one failed relay
+event per drop. --once runs a single tick.
+
+Env: MW_REPO (Project-Lit/litflows), MW_INTERVAL (300), PASEO_LOOPS_HOME
+(~/.paseo/loops), PASEO_RELAY_URL and PASEO_RELAY_AUTH (see relay.sh).
+Test hook: MW_FIXTURES=<dir> reads list.json (gh pr list output) and
+comments_<n>.json (comments array) from <dir>, and appends one line to
+<dir>/calls per gh call.
+EOF
+  exit "${1:-2}"
+}
+
+case "${1:-}" in
+  "") ONCE=0 ;;
+  --once) ONCE=1 ;;
+  -h|--help) usage 0 ;;
+  *) usage ;;
+esac
+
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=paseo/loops/relay.sh
 . "$HERE/relay.sh"
@@ -38,8 +43,6 @@ REPO="${MW_REPO:-Project-Lit/litflows}"
 INT="${MW_INTERVAL:-300}"
 STATE="$D/state.json" SEEN="$D/seen.json" LOG="$D/log" HB="$D/heartbeat"
 FIX="${MW_FIXTURES:-}"
-ONCE=0
-[ "${1:-}" = --once ] && ONCE=1
 
 log() {
   local sz
@@ -55,10 +58,8 @@ with_timeout() { # seconds cmd...; macOS has no timeout(1), so use gtimeout when
   if command -v gtimeout >/dev/null 2>&1; then gtimeout -k 5 "$s" "$@"; else "$@"; fi
 }
 
-# A --once run takes the lock too, so it never races the LaunchAgent run into a
-# double POST.
 take_lock "$D/watch.lock" || { log "another watcher holds watch.lock; exit"; exit 0; }
-trap 'rm -f "$D/watch.lock"' EXIT
+trap 'release_lock "$D/watch.lock"' EXIT
 trap 'exit 143' TERM INT
 
 [ -s "$STATE" ] && jq -e 'type=="object"' "$STATE" >/dev/null 2>&1 || echo '{}' > "$STATE"
@@ -70,7 +71,7 @@ ghlist() {
     --json number,headRefOid,statusCheckRollup < /dev/null 2>/dev/null
 }
 
-ghpayload() { # $1 pr number; prints the newest Mergify payload JSON
+ghpayload() {
   local c
   if [ -n "$FIX" ]; then
     echo "comments $1" >> "$FIX/calls"
@@ -87,7 +88,7 @@ seen_del() { jq --arg n "$1" 'del(.[$n])' "$SEEN" > "$SEEN.tmp" && mv -f "$SEEN.
 QQ='[.statusCheckRollup[]?|select(.name=="Mergify Merge Queue")]|sort_by(.startedAt)|last'
 
 tick() {
-  local list n v head qs qc p reason body
+  local list n v head qs qc p reason left body
   if ! list=$(ghlist) || ! jq -e 'type=="array"' >/dev/null 2>&1 <<<"$list"; then
     log "gh pr list failed; retry next tick"
     return
@@ -109,8 +110,9 @@ tick() {
     [ "$(jq -r .state <<<"$p")" = dequeued ] || { log "pr=$n payload state $(jq -r .state <<<"$p"); no drop"; continue; }
     reason=$(jq -r '[.dequeue_reason.code, .dequeue_reason.message]|map(select(.!=null))|join(": ")|.[0:200]' <<<"$p")
     [ -n "$reason" ] || reason=dequeued
+    left=$(jq -r '.left_at // "none" | tostring' <<<"$p")
     body=$(relay_body mergify_drop "$REPO" "$n" "$head" "$reason")
-    if relay_fire "$STATE" "mergify_drop|https://github.com/$REPO/pull/$n|$head|$reason" "$body"; then
+    if relay_fire "$STATE" "mergify_drop|https://github.com/$REPO/pull/$n|$head|$left|$reason" "$body"; then
       seen_del "$n"
       log "pr=$n drop sent ($(relay_mode)): $reason"
     else

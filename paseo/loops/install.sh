@@ -1,18 +1,4 @@
 #!/usr/bin/env bash
-# Run a loop as a LaunchAgent on this Mac.
-#
-#   install memwait|mergify-watch     write ~/Library/LaunchAgents/sh.frail.paseo-<loop>.plist
-#                                     and bootstrap it into gui/<uid>
-#   uninstall memwait|mergify-watch   boot it out and delete the plist
-#   status                            print each loop's plist, launchd state, and last log lines
-#
-# memwait runs `memwait.sh resume` once at login, and `memwait.sh add` kicks it
-# again. mergify-watch runs at login and launchd restarts it when it exits.
-# The plist command reads ~/.paseo-relay/url and ~/.paseo-relay/auth at start,
-# so the secrets stay out of the plist, this repo, and the loop's argv.
-#
-# Env: PASEO_LOOPS_HOME (~/.paseo/loops) for state and logs. LAUNCHCTL=<cmd>
-# replaces launchctl in tests.
 set -euo pipefail
 
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -23,8 +9,23 @@ DOMAIN="gui/$(id -u)"
 LOOPS="memwait mergify-watch"
 
 usage() {
-  echo "usage: $(basename "$0") install <loop> | uninstall <loop> | status   (loop: memwait, mergify-watch)" >&2
-  exit 2
+  cat >&2 <<EOF
+usage: $(basename "$0") install <loop> | uninstall <loop> | status   (loop: memwait, mergify-watch)
+
+  install <loop>     write ~/Library/LaunchAgents/sh.frail.paseo-<loop>.plist
+                     and bootstrap it into gui/<uid>
+  uninstall <loop>   boot it out and delete the plist
+  status             print each loop's plist, launchd state, and last log lines
+
+memwait runs \`memwait.sh resume\` once at login, and \`memwait.sh add\` kicks it
+again. mergify-watch runs at login, and launchd restarts it when it exits.
+The plist command reads ~/.paseo-relay/url and ~/.paseo-relay/auth at start,
+so the secrets stay out of the plist, this repo, and the loop's argv.
+
+Env: PASEO_LOOPS_HOME (~/.paseo/loops) for state and logs. LAUNCHCTL=<cmd>
+replaces launchctl in tests.
+EOF
+  exit "${1:-2}"
 }
 
 label() { echo "sh.frail.paseo-$1"; }
@@ -41,7 +42,7 @@ xml_escape() {
   printf '%s' "${s//>/&gt;}"
 }
 
-write_plist() { # loop
+write_plist() {
   local loop=$1 script args keepalive cmd
   script="$HERE/$loop.sh"
   case "$script$LOOPS_HOME" in *\'*) echo "error: a path holds a single quote: $script or $LOOPS_HOME" >&2; exit 1 ;; esac
@@ -56,8 +57,6 @@ write_plist() { # loop
   <key>ThrottleInterval</key>
   <integer>60</integer>"
   fi
-  # zsh expands the $(cat ...) when launchd starts the job, so the plist holds
-  # only the file paths.
   cmd="test -s \"\$HOME/.paseo-relay/url\" && test -s \"\$HOME/.paseo-relay/auth\" || { echo 'missing ~/.paseo-relay/url or auth' >&2; exit 78; }
 export PASEO_RELAY_URL=\"\$(cat \"\$HOME/.paseo-relay/url\")\" PASEO_RELAY_AUTH=\"\$(cat \"\$HOME/.paseo-relay/auth\")\"
 exec '$script'$args"
@@ -117,5 +116,6 @@ case "${1:-}" in
       echo "$loop: plist $p, $l"
       tail -n 3 "$LOOPS_HOME/$loop/log" 2>/dev/null | sed 's/^/  /' || true
     done ;;
+  -h|--help) usage 0 ;;
   *) usage ;;
 esac

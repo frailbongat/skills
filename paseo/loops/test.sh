@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
-# Offline tests for the loops. No network beyond 127.0.0.1 and no real relay:
-# a local fake relay records each body and can answer 500 once to prove retry.
-# Work files go in /Volumes/Dock/tmp/relay-loops-test (~/tmp/relay-loops-test
-# on a Mac without /Volumes/Dock).
-# ok and bad always return 0, so `a && ok || bad` is safe.
-# shellcheck disable=SC2015,SC2016
+# shellcheck disable=SC2016
 set -u
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 if [ -d /Volumes/Dock ]; then T=/Volumes/Dock/tmp/relay-loops-test; else T="$HOME/tmp/relay-loops-test"; fi
@@ -13,18 +8,27 @@ mkdir -p "$T/run"
 R="$T/run"
 FAILS=0 PASSES=0
 
-ok() { PASSES=$((PASSES + 1)); echo "ok   $1"; }
+ok() { PASSES=$((PASSES + 1)); echo "ok   $1"; return 0; }
 bad() {
   FAILS=$((FAILS + 1))
   echo "FAIL $1"
   if [ $# -gt 1 ]; then printf '%s\n' "$2" | sed 's/^/     /'; fi
   return 0
 }
-eq() { # name expected actual
+eq() {
   if [ "$2" = "$3" ]; then ok "$1"; else bad "$1" "$(printf 'expected:\n%s\nactual:\n%s' "$2" "$3")"; fi
 }
+check() {
+  local name=$1 out
+  shift
+  if out=$("$@" 2>&1); then ok "$name"; else bad "$name" "$out"; fi
+}
+check_fails() {
+  local name=$1 out
+  shift
+  if out=$("$@" 2>&1); then bad "$name" "$out"; else ok "$name"; fi
+}
 
-# Fake relay ---------------------------------------------------------------
 TEST_PATH=/hook/test-url-token-7f3a
 TEST_HEADER_NAME=X-Relay-Key
 TEST_HEADER_VALUE=test-header-value-91c2
@@ -72,7 +76,6 @@ unset RELAY_DRY MW_CHECK MW_TICKS MW_FIXTURES
 nbodies() { find "$R/relay" -name 'body_*' | wc -l | tr -d ' '; }
 lastbody() { cat "$(find "$R/relay" -name 'body_*' | sort | tail -n 1)"; }
 
-# Launchctl stub: `print` succeeds only for a bootstrapped label ------------
 mkdir -p "$R/stub"
 cat > "$R/stub/launchctl" <<'SH'
 #!/usr/bin/env bash
@@ -89,26 +92,53 @@ SH
 chmod +x "$R/stub/launchctl"
 export LAUNCHCTL="$R/stub/launchctl"
 
-# relay.sh ------------------------------------------------------------------
-(
-  log() { echo "$*"; }
-  # shellcheck source=paseo/loops/relay.sh
-  . "$HERE/relay.sh"
-  out=$(relay_body mergify_drop o/r 7 abc "$(printf 'line one\nline two')")
-  eq "relay_body mergify_drop flattens a multi-line reason" "status: failed
+log() { echo "$*"; }
+# shellcheck source=paseo/loops/relay.sh
+. "$HERE/relay.sh"
+out=$(relay_body mergify_drop o/r 7 abc "$(printf 'line one\nline two')")
+eq "relay_body mergify_drop flattens a multi-line reason" "status: failed
 ticket: https://github.com/o/r/pull/7 lead: none
 pr: https://github.com/o/r/pull/7 head: abc
 verdict: mergify-watch: o/r#7 left the merge queue
 ask: line one line two" "$out"
-  out=$(RELAY_DRY=1 relay_post "$(printf 'a\nb')")
-  eq "relay_post RELAY_DRY=1 logs DRY-RUN and posts nothing" "DRY-RUN a | b" "$out"
-  out=$(PASEO_RELAY_AUTH='' relay_post x)
-  eq "relay_post with empty auth is a dry-run" "DRY-RUN x" "$out"
-  relay_body nope >/dev/null 2>&1 && bad "relay_body rejects an unknown kind" || ok "relay_body rejects an unknown kind"
-)
+out=$(RELAY_DRY=1 relay_post "$(printf 'a\nb')")
+eq "relay_post RELAY_DRY=1 logs DRY-RUN and posts nothing" "DRY-RUN a | b" "$out"
+out=$(PASEO_RELAY_AUTH='' relay_post x)
+eq "relay_post with empty auth is a dry-run" "DRY-RUN x" "$out"
+check_fails "relay_body rejects an unknown kind" relay_body nope
 eq "dry-runs reached no relay" 0 "$(nbodies)"
 
-# memwait -------------------------------------------------------------------
+LK="$R/lock"
+mkdir -p "$LK"
+taker() { exec bash -c '. "$1"; take_lock "$2" || exit 1; echo $$ >> "$3"; exec sleep "$4"' taker "$HERE/relay.sh" "$@"; }
+taker "$LK/a.lock" "$LK/a.won" 30 & holder=$!
+for _ in $(seq 1 50); do [ -s "$LK/a.won" ] && break; sleep 0.1; done
+check "take_lock takes a free lock" test -s "$LK/a.won"
+check_fails "take_lock refuses a lock held by a live pid" taker "$LK/a.lock" "$LK/a.won" 0
+kill "$holder"; wait "$holder" 2>/dev/null
+eq "the lock file still names the dead holder" "$(cat "$LK/a.won")" "$(cat "$LK/a.lock")"
+dead=$(cat "$LK/a.won")
+wins=""
+for _ in $(seq 1 5); do
+  echo "$dead" > "$LK/a.lock"
+  rm -f "$LK/go" "$LK/b.won"
+  pids=""
+  for _ in $(seq 1 16); do
+    bash -c 'while [ ! -e "$1" ]; do :; done; . "$2"; take_lock "$3" && { echo $$ >> "$4"; sleep 1; }' \
+      taker "$LK/go" "$HERE/relay.sh" "$LK/a.lock" "$LK/b.won" & pids="$pids $!"
+  done
+  sleep 0.3
+  touch "$LK/go"
+  for p in $pids; do wait "$p"; done
+  wins="$wins $(wc -l < "$LK/b.won" | tr -d ' ')"
+  [ "$(cat "$LK/b.won")" = "$(cat "$LK/a.lock")" ] || wins="$wins wrong-pid"
+done
+eq "16 racing takers, 5 rounds: exactly one recovers the stale lock each round" " 1 1 1 1 1" "$wins"
+bash -c '. "$1"; echo 1 > "$2"; release_lock "$2"' rel "$HERE/relay.sh" "$LK/c.lock"
+check "release_lock keeps a lock this shell does not hold" test -e "$LK/c.lock"
+bash -c '. "$1"; take_lock "$2" && release_lock "$2"' rel "$HERE/relay.sh" "$LK/c.lock"
+check "release_lock drops a lock this shell holds" test ! -e "$LK/c.lock"
+
 MW="$HERE/memwait.sh"
 MWD="$R/loops/memwait"
 export MW_HOST=testhost MW_INTERVAL=0
@@ -167,7 +197,7 @@ touch "$R/relay/fail_next"
 MW_CHECK=$OKCHK MW_TICKS=1 "$MW" resume
 eq "memwait sends nothing new when the relay answers 500" 4 "$(nbodies)"
 eq "memwait keeps the ticket after a failed POST" 1 "$(jq length "$MWD/queue.json")"
-grep -q 'relay http=500' "$MWD/log" && ok "memwait logs http=500" || bad "memwait logs http=500"
+check "memwait logs http=500" grep -q 'relay http=500' "$MWD/log"
 MW_CHECK=$OKCHK MW_TICKS=1 "$MW" resume
 eq "memwait retries after the 500" 5 "$(nbodies)"
 eq "memwait retry body" "https://t/D" "$(lastbody | sed -n 's/^ticket: \(.*\) lead:.*/\1/p')"
@@ -182,29 +212,35 @@ MW_CHECK=$OKCHK MW_TICKS=1 "$MW" resume
 eq "memwait takes over a lock left by a dead pid" 6 "$(nbodies)"
 
 rm -f "$R/stub/loaded_sh.frail.paseo-memwait"
+q0=$(cat "$MWD/queue.json")
+check_fails "memwait add refuses with no LaunchAgent and no relay env" \
+  env PASEO_RELAY_URL= PASEO_RELAY_AUTH= "$MW" add https://t/G lead-g
+out=$(PASEO_RELAY_URL='' PASEO_RELAY_AUTH='' "$MW" add https://t/G lead-g 2>&1 >/dev/null)
+case "$out" in *"error: no LaunchAgent and no relay env"*) ok "memwait add says why on stderr" ;;
+  *) bad "memwait add says why on stderr" "$out" ;; esac
+eq "memwait add refusal leaves the queue alone" "$q0" "$(cat "$MWD/queue.json")"
 out=$(RELAY_DRY=1 MW_CHECK=$OKCHK "$MW" add https://t/F lead-f 2>&1)
 case "$out" in *"waiter started in the background, mode=dry-run"*) ok "memwait add starts a waiter when no LaunchAgent is loaded" ;;
   *) bad "memwait add starts a waiter when no LaunchAgent is loaded" "$out" ;; esac
 for _ in $(seq 1 50); do grep -q 'freed https://t/F' "$MWD/log" && break; sleep 0.1; done
-grep -q 'DRY-RUN status: ready | ticket: https://t/F' "$MWD/log" && ok "memwait background waiter dry-runs" || bad "memwait background waiter dry-runs"
+check "memwait background waiter dry-runs" grep -q 'DRY-RUN status: ready | ticket: https://t/F' "$MWD/log"
 eq "memwait background dry-run reached no relay" 6 "$(nbodies)"
 
-# mergify-watch -------------------------------------------------------------
 MG="$HERE/mergify-watch.sh"
 MGD="$R/loops/mergify-watch"
 F="$R/fixtures"
 mkdir -p "$F"
 export MW_FIXTURES=$F MW_REPO=o/r
-pr() { # number head status conclusion
+pr() {
   jq -cn --argjson n "$1" --arg h "$2" --arg s "$3" --arg c "$4" \
     '{number:$n, headRefOid:$h, statusCheckRollup:[{name:"Mergify Merge Queue", status:$s, conclusion:(if $c=="" then null else $c end), startedAt:"2026-11-01T00:00:00Z"}]}'
 }
 list() { printf '%s\n' "$@" | jq -s . > "$F/list.json"; }
-payload() { # number state code message
-  jq -n --arg st "$2" --arg c "$3" --arg m "$4" \
+payload() {
+  jq -n --arg st "$2" --arg c "$3" --arg m "$4" --arg l "${5:-2026-11-01T01:00:00Z}" \
     '[{user:{login:"someone"}, body:"hi", updated_at:"2026-11-01T00:00:00Z"},
       {user:{login:"mergify[bot]"}, updated_at:"2026-11-01T01:00:00Z",
-       body:("<!-- Mergify Payload -*- " + ({state:$st, dequeue_reason:{code:$c, message:$m}}|tojson) + " -->")}]' > "$F/comments_$1.json"
+       body:("<!-- Mergify Payload -*- " + ({state:$st, left_at:$l, dequeue_reason:{code:$c, message:$m}}|tojson) + " -->")}]' > "$F/comments_$1.json"
 }
 calls() { wc -l < "$F/calls" | tr -d ' '; }
 : > "$F/calls"
@@ -247,13 +283,30 @@ eq "mergify ticks 4-5: repeats send nothing" $((base + 2)) "$(nbodies)"
 jq '. + {"101":"x"}' "$MGD/seen.json" > "$R/s" && mv "$R/s" "$MGD/seen.json"
 "$MG" --once
 eq "mergify: a re-watched PR with a sent key sends nothing" $((base + 2)) "$(nbodies)"
-grep -q 'already sent: mergify_drop|https://github.com/o/r/pull/101|aaa|' "$MGD/log" && ok "mergify logs the dedup hit" || bad "mergify logs the dedup hit"
+check "mergify logs the dedup hit" grep -q 'already sent: mergify_drop|https://github.com/o/r/pull/101|aaa|' "$MGD/log"
 
 list "$(pr 101 eee IN_PROGRESS '')" "$(pr 102 bbb COMPLETED SUCCESS)"
 "$MG" --once
 list "$(pr 101 eee COMPLETED NEUTRAL)" "$(pr 102 bbb COMPLETED SUCCESS)"
 "$MG" --once
 eq "mergify: a new head on the same PR sends again" $((base + 3)) "$(nbodies)"
+
+payload 101 dequeued CHECKS_FAILED "ci failed" 2026-11-02T01:00:00Z
+list "$(pr 101 eee IN_PROGRESS '')" "$(pr 102 bbb COMPLETED SUCCESS)"
+"$MG" --once
+list "$(pr 101 eee COMPLETED NEUTRAL)" "$(pr 102 bbb COMPLETED SUCCESS)"
+"$MG" --once
+payload 101 dequeued CHECKS_FAILED "ci failed" 2026-11-02T02:00:00Z
+list "$(pr 101 eee IN_PROGRESS '')" "$(pr 102 bbb COMPLETED SUCCESS)"
+"$MG" --once
+list "$(pr 101 eee COMPLETED NEUTRAL)" "$(pr 102 bbb COMPLETED SUCCESS)"
+"$MG" --once
+eq "mergify: two drops at one head and reason, new left_at, send twice" $((base + 5)) "$(nbodies)"
+list "$(pr 101 eee IN_PROGRESS '')" "$(pr 102 bbb COMPLETED SUCCESS)"
+"$MG" --once
+list "$(pr 101 eee COMPLETED NEUTRAL)" "$(pr 102 bbb COMPLETED SUCCESS)"
+"$MG" --once
+eq "mergify: an exact repeat drop sends nothing" $((base + 5)) "$(nbodies)"
 
 list "$(pr 103 ccc COMPLETED NEUTRAL)"
 "$MG" --once
@@ -262,12 +315,11 @@ eq "mergify: closed PRs leave seen.json" '{}' "$(jq -c . "$MGD/seen.json")"
 echo broken > "$F/list.json"
 c0=$(nbodies)
 "$MG" --once
-grep -q 'gh pr list failed; retry next tick' "$MGD/log" && ok "mergify logs a gh failure" || bad "mergify logs a gh failure"
+check "mergify logs a gh failure" grep -q 'gh pr list failed; retry next tick' "$MGD/log"
 eq "mergify: a gh failure sends nothing" "$c0" "$(nbodies)"
-test -s "$MGD/heartbeat" && ok "mergify writes a heartbeat" || bad "mergify writes a heartbeat"
+check "mergify writes a heartbeat" test -s "$MGD/heartbeat"
 unset MW_FIXTURES MW_REPO
 
-# install.sh ----------------------------------------------------------------
 IH="$T/home"
 rm -rf "$IH"
 mkdir -p "$IH/.paseo-relay"
@@ -276,11 +328,11 @@ printf '%s' "$PASEO_RELAY_AUTH" > "$IH/.paseo-relay/auth"
 : > "$R/stub/calls"
 rm -f "$R/stub"/loaded_*
 inst() { HOME="$IH" PASEO_LOOPS_HOME="$IH/.paseo/loops" "$HERE/install.sh" "$@"; }
-inst install memwait >/dev/null && ok "install memwait" || bad "install memwait"
-inst install mergify-watch >/dev/null && ok "install mergify-watch" || bad "install mergify-watch"
+check "install memwait" inst install memwait
+check "install mergify-watch" inst install mergify-watch
 MP="$IH/Library/LaunchAgents/sh.frail.paseo-memwait.plist"
 GP="$IH/Library/LaunchAgents/sh.frail.paseo-mergify-watch.plist"
-plutil -lint -s "$MP" "$GP" && ok "plists pass plutil -lint" || bad "plists pass plutil -lint"
+check "plists pass plutil -lint" plutil -lint -s "$MP" "$GP"
 eq "memwait plist runs resume with no KeepAlive" "false" "$(plutil -extract KeepAlive raw "$MP" 2>/dev/null || echo false)"
 eq "mergify-watch plist has KeepAlive" "true" "$(plutil -extract KeepAlive raw "$GP")"
 case "$(plutil -extract ProgramArguments.2 raw "$MP")" in
@@ -293,12 +345,11 @@ eq "reinstall boots out first" 1 "$(grep -c "^bootout gui/$(id -u)/sh.frail.pase
 out=$(inst status)
 case "$out" in *"memwait: plist present, loaded"*"mergify-watch: plist present, loaded"*) ok "status shows both loaded" ;; *) bad "status shows both loaded" "$out" ;; esac
 inst uninstall memwait >/dev/null
-test ! -e "$MP" && ok "uninstall removes the plist" || bad "uninstall removes the plist"
+check "uninstall removes the plist" test ! -e "$MP"
 rm "$IH/.paseo-relay/auth"
-inst install memwait >/dev/null 2>&1 && bad "install refuses without ~/.paseo-relay/auth" || ok "install refuses without ~/.paseo-relay/auth"
-grep -q -- '--force' "$R/stub/calls" && bad "no --force passed to launchctl" || ok "no --force passed to launchctl"
+check_fails "install refuses without ~/.paseo-relay/auth" inst install memwait
+check_fails "no --force passed to launchctl" grep -q -- '--force' "$R/stub/calls"
 
-# Secrets -------------------------------------------------------------------
 eq "every request carried the auth header, path, and text/plain" "" "$(grep -v '^auth_ok$' "$R/relay/requests")"
 leaks=$(grep -rlE "test-url-token-7f3a|$TEST_HEADER_VALUE" "$R/loops" "$IH/Library" "$IH/.paseo" 2>/dev/null)
 eq "no log, state, or plist holds the test URL or header value" "" "$leaks"

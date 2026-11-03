@@ -1,7 +1,4 @@
 # shellcheck shell=bash
-# Sourced by the loops. Builds relay bodies and POSTs them to the
-# paseo-result-relay webhook.
-#
 #   relay_body <kind> <fields...>      print the 5-line body for one loop event
 #   relay_post <body-file-or-string>   POST it; 0 only on HTTP 2xx or dry-run
 #   relay_fire <state.json> <key> <body>
@@ -9,6 +6,7 @@
 #                                      after relay_post returns 0
 #   relay_mode                         print live or dry-run
 #   take_lock <file>                   0 when this shell now holds the lock
+#   release_lock <file>                drop the lock if this shell holds it
 #
 # Env: PASEO_RELAY_URL, PASEO_RELAY_AUTH (one full "Name: value" header line).
 # Either one empty, or RELAY_DRY=1, means dry-run: log the body, POST nothing.
@@ -27,7 +25,6 @@ _relay_one_line() {
   printf '%s' "${v//$'\n'/ }"
 }
 
-# The one table from loop event to relay body.
 #   mem_free         <host> <reading> <ticket> <lead>
 #   mem_held         <host> <reading> <ticket> <lead> <held_min>
 #   mem_wait_timeout <host> <hours> <ticket> <lead>
@@ -94,16 +91,20 @@ relay_fire() {
     && mv -f "$state.tmp" "$state"
 }
 
-# A pid file lock. macOS has no flock, and shlock refuses to replace a lock
-# file whose mtime is recent even when its pid is dead. noclobber makes the
-# create atomic. A stale file is renamed away first, so only one taker wins it.
+# The lock file holds the holder's pid. macOS has no flock(1), so every take
+# runs under lockf(1) on <file>.guard, which makes reading a dead pid and
+# writing ours one step: two takers can never both win a stale lock. The kernel
+# drops the guard when lockf exits, so a crash never leaves the guard stuck.
 take_lock() {
-  local f=$1 pid
-  ( set -o noclobber; echo $$ > "$f" ) 2>/dev/null && return 0
-  pid=$(cat "$f" 2>/dev/null) || pid=
-  [ -n "$pid" ] || return 1
-  kill -0 "$pid" 2>/dev/null && return 1
-  mv -f "$f" "$f.stale.$$" 2>/dev/null || return 1
-  rm -f "$f.stale.$$"
-  ( set -o noclobber; echo $$ > "$f" ) 2>/dev/null
+  # shellcheck disable=SC2016
+  lockf -k -s -t 10 "$1.guard" /bin/sh -c '
+    pid=$(cat "$1" 2>/dev/null)
+    case $pid in ""|*[!0-9]*) ;; *) kill -0 "$pid" 2>/dev/null && exit 1 ;; esac
+    echo "$2" > "$1.new" && mv -f "$1.new" "$1"' take_lock "$1" "$$"
+}
+
+# No guard needed: only a dead holder's file gets replaced, and this one is alive.
+release_lock() {
+  [ "$(cat "$1" 2>/dev/null)" = "$$" ] && rm -f "$1"
+  return 0
 }
