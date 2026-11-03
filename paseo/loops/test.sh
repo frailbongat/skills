@@ -226,6 +226,12 @@ for _ in $(seq 1 50); do grep -q 'freed https://t/F' "$MWD/log" && break; sleep 
 check "memwait background waiter dry-runs" grep -q 'DRY-RUN status: ready | ticket: https://t/F' "$MWD/log"
 eq "memwait background dry-run reached no relay" 6 "$(nbodies)"
 
+for v in 101 0 abc -5; do
+  check_fails "memwait refuses MW_FREE_MIN='$v'" env MW_FREE_MIN="$v" "$MW" status
+done
+check "memwait accepts MW_FREE_MIN=100" env MW_FREE_MIN=100 "$MW" status
+eq "memwait bad MW_FREE_MIN sent nothing" 6 "$(nbodies)"
+
 MG="$HERE/mergify-watch.sh"
 MGD="$R/loops/mergify-watch"
 F="$R/fixtures"

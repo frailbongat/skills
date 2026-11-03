@@ -16,6 +16,12 @@ LABEL=sh.frail.paseo-memwait
 : "${MW_HOLD_NOTE:=1800}"
 : "${MW_TIMEOUT:=86400}"
 : "${MW_TICKS:=0}"
+case $MW_FREE_MIN in
+  ''|*[!0-9]*) ok=0 ;;
+  *) [ "$MW_FREE_MIN" -ge 1 ] && [ "$MW_FREE_MIN" -le 100 ] && ok=1 || ok=0 ;;
+esac
+[ "$ok" = 1 ] || { echo "error: MW_FREE_MIN=$MW_FREE_MIN must be a whole percent from 1 to 100, or the gate can never pass" >&2; exit 2; }
+unset ok
 
 trap 'release_lock "$D/queue.lock"; release_lock "$D/loop.lock"' EXIT
 trap 'exit 143' TERM INT

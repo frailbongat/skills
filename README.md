@@ -244,7 +244,7 @@ The loops read the webhook from two environment variables, which `install.sh` fi
 | `RELAY_DRY` | unset | `1` logs each body as `DRY-RUN` and POSTs nothing, the same as an empty URL or header |
 | `PASEO_LOOPS_HOME` | `~/.paseo/loops` | state and logs, in `<loop>/` |
 | `MW_HOST` | `scutil --get LocalHostName` | host name in memwait bodies |
-| `MW_FREE_MIN` | `25` | memwait free memory percent that counts as ready |
+| `MW_FREE_MIN` | `25` | memwait free memory percent that counts as ready, a whole number from 1 to 100 |
 | `MW_INTERVAL` | `300` | seconds between passes, both loops |
 | `MW_HOLD_NOTE` | `1800` | memwait seconds before the question |
 | `MW_TIMEOUT` | `86400` | memwait seconds before it gives up |
