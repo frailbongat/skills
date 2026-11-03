@@ -231,10 +231,15 @@ out=$(PASEO_RELAY_URL='' PASEO_RELAY_AUTH='' "$MW" add https://t/G lead-g 2>&1 >
 case "$out" in *"error: no LaunchAgent and no relay env"*) ok "memwait add says why on stderr" ;;
   *) bad "memwait add says why on stderr" "$out" ;; esac
 eq "memwait add refusal leaves the queue alone" "$q0" "$(cat "$MWD/queue.json")"
-out=$(RELAY_DRY=1 MW_CHECK=$OKCHK "$MW" add https://t/F lead-f 2>&1)
+# macOS nohup exits 127 with "can't detach from console" when no desktop
+# login owns the console, so this fake does the same.
+mkdir -p "$R/nohup-fail"
+printf '#!/bin/sh\necho "nohup: can'"'"'t detach from console" >&2\nexit 127\n' > "$R/nohup-fail/nohup"
+chmod +x "$R/nohup-fail/nohup"
+out=$(PATH="$R/nohup-fail:$PATH" RELAY_DRY=1 MW_CHECK=$OKCHK "$MW" add https://t/F lead-f 2>&1)
 case "$out" in *"waiter started in the background, mode=dry-run"*) ok "memwait add starts a waiter when no LaunchAgent is loaded" ;;
   *) bad "memwait add starts a waiter when no LaunchAgent is loaded" "$out" ;; esac
-for _ in $(seq 1 50); do grep -q 'freed https://t/F' "$MWD/log" && break; sleep 0.1; done
+for _ in $(seq 1 300); do grep -q 'DRY-RUN status: ready | ticket: https://t/F' "$MWD/log" && break; sleep 0.1; done
 check "memwait background waiter dry-runs" grep -q 'DRY-RUN status: ready | ticket: https://t/F' "$MWD/log"
 eq "memwait background dry-run reached no relay" 6 "$(nbodies)"
 

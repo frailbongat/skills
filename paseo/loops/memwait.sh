@@ -148,7 +148,9 @@ case "${1:-}" in
       "$LAUNCHCTL" kickstart "$agent" >/dev/null 2>&1
       echo "queued $2 on $H; kicked $agent"
     else
-      nohup "$0" resume >/dev/null 2>&1 < /dev/null &
+      # Not nohup: with no desktop login it exits "can't detach from console".
+      # An ignored HUP stays ignored across exec.
+      ( trap '' HUP; exec "$0" resume ) >/dev/null 2>&1 < /dev/null &
       echo "queued $2 on $H; waiter started in the background, mode=$(relay_mode)"
     fi ;;
   resume)
