@@ -261,6 +261,20 @@ payload() {
        body:("<!-- Mergify Payload -*- " + ({state:$st, left_at:$l, dequeue_reason:{code:$c, message:$m}}|tojson) + " -->")}]' > "$F/comments_$1.json"
 }
 calls() { wc -l < "$F/calls" | tr -d ' '; }
+mkdir -p "$MGD"
+echo '{"201":"x"}' > "$MGD/seen.json"
+list "$(pr 201 fff COMPLETED NEUTRAL)"
+payload 201 dequeued CHECKS_FAILED "ci failed"
+: > "$F/calls"
+base=$(nbodies)
+"$MG" --once
+eq "mergify with no owner marker sends nothing and calls no gh" "$base 0" "$(nbodies) $(calls)"
+eq "mergify with no owner marker logs idle once" 1 "$(grep -c 'not the mergify owner; idle' "$MGD/log")"
+check "mergify with no owner marker writes a heartbeat" test -s "$MGD/heartbeat"
+touch "$MGD/owner"
+"$MG" --once
+eq "mergify with the owner marker sends the drop" $((base + 1)) "$(nbodies)"
+echo '{}' > "$MGD/seen.json"
 : > "$F/calls"
 base=$(nbodies)
 
@@ -367,10 +381,16 @@ esac
 eq "launchctl got two bootstraps" 2 "$(grep -c "^bootstrap gui/$(id -u) $IH/Library/LaunchAgents/sh.frail.paseo-" "$R/stub/calls")"
 inst install mergify-watch >/dev/null
 eq "reinstall boots out first" 1 "$(grep -c "^bootout gui/$(id -u)/sh.frail.paseo-mergify-watch$" "$R/stub/calls")"
+check "install mergify-watch writes the owner marker" test -e "$IH/.paseo/loops/mergify-watch/owner"
 out=$(inst status)
-case "$out" in *"memwait: plist present, loaded"*"mergify-watch: plist present, loaded"*) ok "status shows both loaded" ;; *) bad "status shows both loaded" "$out" ;; esac
+case "$out" in *"memwait: plist present, loaded"*"mergify-watch: plist present, loaded"*", owner"*) ok "status shows both loaded and the mergify owner" ;;
+  *) bad "status shows both loaded and the mergify owner" "$out" ;; esac
 inst uninstall memwait >/dev/null
 check "uninstall removes the plist" test ! -e "$MP"
+inst uninstall mergify-watch >/dev/null
+check "uninstall mergify-watch removes the owner marker" test ! -e "$IH/.paseo/loops/mergify-watch/owner"
+case "$(inst status)" in *"mergify-watch: plist absent, not loaded, standby"*) ok "status shows a mergify standby" ;;
+  *) bad "status shows a mergify standby" "$(inst status)" ;; esac
 mkdir -p "$R/tools"
 printf '#!/bin/sh\nexit 1\n' > "$R/tools/gh"
 chmod +x "$R/tools/gh"

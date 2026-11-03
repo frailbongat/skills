@@ -25,6 +25,12 @@ On a Mac with no desktop login, rerun install after a reboot.
 
 memwait runs \`memwait.sh resume\` once at login, and \`memwait.sh add\` kicks it
 again. mergify-watch runs at login, and launchd restarts it when it exits.
+
+Run install mergify-watch on one host only. It writes the owner marker
+$LOOPS_HOME/mergify-watch/owner, and a watcher with no marker sends nothing,
+because each host keeps its own sent-drop state. To move off two watchers,
+rerun install mergify-watch on the owner and run uninstall mergify-watch on
+the other host.
 install resolves each tool the loop calls (memwait: jq, curl; mergify-watch:
 gh, jq, curl) on the current PATH and puts its dir at the front of the plist
 PATH, so run install from a shell where those tools work. It refuses when one
@@ -38,6 +44,8 @@ replaces launchctl in tests.
 EOF
   exit "${1:-2}"
 }
+
+OWNER="$LOOPS_HOME/mergify-watch/owner"
 
 label() { echo "sh.frail.paseo-$1"; }
 plist() { echo "$AGENTS/$(label "$1").plist"; }
@@ -138,19 +146,25 @@ case "${1:-}" in
     write_plist "$2" "$path"
     plutil -lint -s "$(plist "$2")"
     d=$(domain)
+    if [ "$2" = mergify-watch ]; then date '+%Y-%m-%dT%H:%M:%S%z' > "$OWNER"; fi
     "$LAUNCHCTL" bootstrap "$d" "$(plist "$2")"
     echo "installed $(label "$2") in $d, logs in $LOOPS_HOME/$2/" ;;
   uninstall)
     check_loop "${2:-}"
     bootout_all "$2"
     rm -f "$(plist "$2")"
+    if [ "$2" = mergify-watch ]; then rm -f "$OWNER"; fi
     echo "uninstalled $(label "$2")" ;;
   status)
     for loop in $LOOPS; do
       if [ -f "$(plist "$loop")" ]; then p=present; else p=absent; fi
       l=$(loaded_in "$loop" | paste -sd ' ' -)
       if [ -n "$l" ]; then l="loaded in $l"; else l="not loaded"; fi
-      echo "$loop: plist $p, $l"
+      o=""
+      if [ "$loop" = mergify-watch ]; then
+        if [ -e "$OWNER" ]; then o=", owner"; else o=", standby"; fi
+      fi
+      echo "$loop: plist $p, $l$o"
       tail -n 3 "$LOOPS_HOME/$loop/log" 2>/dev/null | sed 's/^/  /' || true
     done ;;
   -h|--help) usage 0 ;;
