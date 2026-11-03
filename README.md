@@ -226,6 +226,44 @@ Set `PASEO_HOME` to point `paseo.sh` at another Paseo home. It defaults to `~/.p
 
 My three local Paseo plugins, `paseo-composer-pills`, `paseo-ticket-board`, and `paseo-ship-check` under `/Volumes/Dock/dev/frail/`, are not handled here yet and need their own clone.
 
+### Loops
+
+`paseo/loops/` holds two shell loops that run as LaunchAgents on my Macs. Each one POSTs a 5-line text body to the paseo-result-relay webhook, and the relay hands it to the lead agent. They call no model.
+
+- `memwait.sh` holds a ticket start until this Mac has free memory. `memwait.sh add <ticket_url> <lead_id>` queues the start. Every 5 minutes the waiter reads `memory_pressure -Q` and sends `status: ready` for each held ticket once free memory reaches 25%. A ticket held 30 minutes sends one `status: question`. A ticket held 24 hours sends one `status: failed` and leaves the queue. `memwait.sh status` prints the queue, and `memwait.sh resume` restarts the waiter.
+- `mergify-watch.sh` watches Project-Lit/litflows for PRs that leave the Mergify merge queue without merging. Every 5 minutes it runs one read-only `gh pr list`, remembers each PR whose "Mergify Merge Queue" check is queued or running, and reads the Mergify comment once that check ends without success. A `dequeued` state sends one `status: failed` with the dequeue reason. It never comments on or changes a PR.
+
+Both loops keep a `state.json` of every event they sent, keyed by ticket or PR, the hold start or head sha, and the reason. A key is saved only after the relay answers 2xx, so a failed POST retries on the next pass and a sent event never repeats.
+
+The loops read the webhook from two environment variables, which `install.sh` fills from files at start. The secrets never go into the plist, the repo, a log, or the loop's command line.
+
+| Variable | Default | Use |
+| --- | --- | --- |
+| `PASEO_RELAY_URL` | from `~/.paseo-relay/url` | webhook URL |
+| `PASEO_RELAY_AUTH` | from `~/.paseo-relay/auth` | one full `Name: value` header line |
+| `RELAY_DRY` | unset | `1` logs each body as `DRY-RUN` and POSTs nothing, the same as an empty URL or header |
+| `PASEO_LOOPS_HOME` | `~/.paseo/loops` | state and logs, in `<loop>/` |
+| `MW_HOST` | `scutil --get LocalHostName` | host name in memwait bodies |
+| `MW_FREE_MIN` | `25` | memwait free memory percent that counts as ready, a whole number from 1 to 100 |
+| `MW_INTERVAL` | `300` | seconds between passes, both loops |
+| `MW_HOLD_NOTE` | `1800` | memwait seconds before the question |
+| `MW_TIMEOUT` | `86400` | memwait seconds before it gives up |
+| `MW_REPO` | `Project-Lit/litflows` | repo mergify-watch reads |
+
+Install memwait on every Mac. Install mergify-watch on Frails-Mac-mini-2 only, so two Macs never send the same drop.
+
+1. Put the webhook URL in `~/.paseo-relay/url` and the header line in `~/.paseo-relay/auth`, then run `chmod 600 ~/.paseo-relay/*`.
+2. Run `paseo/loops/install.sh install memwait`. On Frails-Mac-mini-2, also run `paseo/loops/install.sh install mergify-watch`.
+3. Run `paseo/loops/install.sh status` to see each plist, its launchd state, and the last log lines.
+
+`install.sh` writes `~/Library/LaunchAgents/sh.frail.paseo-<loop>.plist` and runs `launchctl bootstrap gui/$(id -u)`. memwait runs `memwait.sh resume` once at login, and `memwait.sh add` kicks it again. launchd keeps mergify-watch running and restarts it 60 seconds after it exits.
+
+To stop a loop, run `paseo/loops/install.sh uninstall <loop>`. It boots the job out and deletes the plist. Each loop logs to `~/.paseo/loops/<loop>/log`, and launchd writes the loop's own output to `launchd.log` in the same folder. mergify-watch also writes the time of its last pass to `heartbeat` there.
+
+To check mergify-watch by hand without sending anything, run `RELAY_DRY=1 paseo/loops/mergify-watch.sh --once`. `paseo/loops/test.sh` runs the offline tests against a fake relay on 127.0.0.1.
+
+These loops replace the box copies at `/workspace/paseo/bin/memwait.sh` and `/workspace/igris/mergify-watch/`. Stop the box copies once both LaunchAgents run on each Mac, so each event fires once.
+
 ## Layout
 
 ```
@@ -240,4 +278,9 @@ reference-skill-lock.json   copy of this machine's Skills CLI lock file
 paseo/agent-roles/          Paseo role briefs, symlinked to ~/.paseo/agent-roles
 paseo/profiles.json         Paseo agent and terminal profiles, with {{HOME}} for the home directory
 paseo/paseo.sh              export, check, or apply the Paseo profiles and role briefs
+paseo/loops/relay.sh        shared relay body table, POST, dedup, and lock helpers for the loops
+paseo/loops/memwait.sh      hold a ticket start until this Mac has free memory
+paseo/loops/mergify-watch.sh  report PRs that leave the litflows Mergify queue
+paseo/loops/install.sh      install, uninstall, or show the loops' LaunchAgents
+paseo/loops/test.sh         offline tests for the loops against a fake relay
 ```
