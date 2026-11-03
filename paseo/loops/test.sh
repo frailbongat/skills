@@ -339,11 +339,13 @@ check "install mergify-watch" inst install mergify-watch
 MP="$IH/Library/LaunchAgents/sh.frail.paseo-memwait.plist"
 GP="$IH/Library/LaunchAgents/sh.frail.paseo-mergify-watch.plist"
 check "plists pass plutil -lint" plutil -lint -s "$MP" "$GP"
-eq "memwait plist runs resume with no KeepAlive" "false" "$(plutil -extract KeepAlive raw "$MP" 2>/dev/null || echo false)"
-eq "mergify-watch plist has KeepAlive" "true" "$(plutil -extract KeepAlive raw "$GP")"
-case "$(plutil -extract ProgramArguments.2 raw "$MP")" in
+# Older macOS plutil has no "raw" format for -extract, so go through JSON.
+pget() { plutil -convert json -o - "$1" | jq -r "$2"; }
+eq "memwait plist runs resume with no KeepAlive" "false" "$(pget "$MP" '.KeepAlive // false')"
+eq "mergify-watch plist has KeepAlive" "true" "$(pget "$GP" .KeepAlive)"
+case "$(pget "$MP" '.ProgramArguments[2]')" in
   *'PASEO_RELAY_URL="$(cat "$HOME/.paseo-relay/url")"'*"exec '$HERE/memwait.sh' resume") ok "memwait plist reads the relay files at start" ;;
-  *) bad "memwait plist reads the relay files at start" "$(plutil -extract ProgramArguments.2 raw "$MP")" ;;
+  *) bad "memwait plist reads the relay files at start" "$(pget "$MP" '.ProgramArguments[2]')" ;;
 esac
 eq "launchctl got two bootstraps" 2 "$(grep -c "^bootstrap gui/$(id -u) $IH/Library/LaunchAgents/sh.frail.paseo-" "$R/stub/calls")"
 inst install mergify-watch >/dev/null
