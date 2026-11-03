@@ -7,6 +7,7 @@ LOOPS_HOME="${PASEO_LOOPS_HOME:-$HOME/.paseo/loops}"
 AGENTS="$HOME/Library/LaunchAgents"
 U=$(id -u)
 LOOPS="memwait mergify-watch"
+BASE_PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 usage() {
   cat >&2 <<EOF
@@ -24,6 +25,11 @@ On a Mac with no desktop login, rerun install after a reboot.
 
 memwait runs \`memwait.sh resume\` once at login, and \`memwait.sh add\` kicks it
 again. mergify-watch runs at login, and launchd restarts it when it exits.
+install resolves each tool the loop calls (memwait: jq, curl; mergify-watch:
+gh, jq, curl) on the current PATH and puts its dir at the front of the plist
+PATH, so run install from a shell where those tools work. It refuses when one
+is missing.
+
 The plist command reads ~/.paseo-relay/url and ~/.paseo-relay/auth at start,
 so the secrets stay out of the plist, this repo, and the loop's argv.
 
@@ -52,6 +58,18 @@ check_loop() {
   case "${1:-}" in memwait|mergify-watch) ;; *) usage ;; esac
 }
 
+tools() { case $1 in memwait) echo "jq curl" ;; mergify-watch) echo "gh jq curl" ;; esac; }
+
+plist_path() {
+  local p=$BASE_PATH t bin dir
+  for t in $(tools "$1"); do
+    bin=$(command -v "$t") || { echo "error: $1 needs $t, and it is not on PATH=$PATH" >&2; return 1; }
+    dir=$(dirname "$bin")
+    case ":$p:" in *":$dir:"*) ;; *) p="$dir:$p" ;; esac
+  done
+  echo "$p"
+}
+
 xml_escape() {
   local s=${1//&/&amp;}
   s=${s//</&lt;}
@@ -59,7 +77,7 @@ xml_escape() {
 }
 
 write_plist() {
-  local loop=$1 script args keepalive cmd
+  local loop=$1 path=$2 script args keepalive cmd
   script="$HERE/$loop.sh"
   case "$script$LOOPS_HOME" in *\'*) echo "error: a path holds a single quote: $script or $LOOPS_HOME" >&2; exit 1 ;; esac
   if [ "$loop" = memwait ]; then
@@ -93,7 +111,7 @@ exec '$script'$args"
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key>
-    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <string>$(xml_escape "$path")</string>
     <key>PASEO_LOOPS_HOME</key>
     <string>$(xml_escape "$LOOPS_HOME")</string>
   </dict>
@@ -115,8 +133,9 @@ case "${1:-}" in
       echo "error: ~/.paseo-relay/url and ~/.paseo-relay/auth must both exist and be non-empty" >&2
       exit 1
     fi
+    path=$(plist_path "$2") || exit 1
     bootout_all "$2"
-    write_plist "$2"
+    write_plist "$2" "$path"
     plutil -lint -s "$(plist "$2")"
     d=$(domain)
     "$LAUNCHCTL" bootstrap "$d" "$(plist "$2")"

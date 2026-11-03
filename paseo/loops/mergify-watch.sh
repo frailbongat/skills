@@ -89,6 +89,10 @@ QQ='[.statusCheckRollup[]?|select(.name=="Mergify Merge Queue")]|sort_by(.starte
 
 tick() {
   local list n v head qs qc p reason left body
+  if [ -z "$FIX" ] && ! command -v gh >/dev/null 2>&1; then
+    log "gh not found on PATH=$PATH; retry next tick"
+    return
+  fi
   if ! list=$(ghlist) || ! jq -e 'type=="array"' >/dev/null 2>&1 <<<"$list"; then
     log "gh pr list failed; retry next tick"
     return

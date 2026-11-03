@@ -336,6 +336,11 @@ c0=$(nbodies)
 check "mergify logs a gh failure" grep -q 'gh pr list failed; retry next tick' "$MGD/log"
 eq "mergify: a gh failure sends nothing" "$c0" "$(nbodies)"
 check "mergify writes a heartbeat" test -s "$MGD/heartbeat"
+NOGH="$R/nogh"
+mkdir -p "$NOGH"
+ln -sf "$(command -v jq)" "$NOGH/jq"
+env -u MW_FIXTURES PATH="$NOGH:/usr/bin:/bin:/usr/sbin:/sbin" "$MG" --once
+check "mergify logs that gh is missing and the PATH it searched" grep -q "gh not found on PATH=$NOGH:/usr/bin:" "$MGD/log"
 unset MW_FIXTURES MW_REPO
 
 IH="$T/home"
@@ -366,6 +371,14 @@ out=$(inst status)
 case "$out" in *"memwait: plist present, loaded"*"mergify-watch: plist present, loaded"*) ok "status shows both loaded" ;; *) bad "status shows both loaded" "$out" ;; esac
 inst uninstall memwait >/dev/null
 check "uninstall removes the plist" test ! -e "$MP"
+mkdir -p "$R/tools"
+printf '#!/bin/sh\nexit 1\n' > "$R/tools/gh"
+chmod +x "$R/tools/gh"
+PATH="$R/tools:$PATH" inst install mergify-watch >/dev/null
+eq "the plist PATH starts with the dir of the gh install found" "$R/tools" "$(pget "$GP" .EnvironmentVariables.PATH | cut -d: -f1)"
+eq "the plist PATH lists each dir once" "" "$(pget "$GP" .EnvironmentVariables.PATH | tr : '\n' | sort | uniq -d)"
+out=$(PATH="$NOGH:/usr/bin:/bin:/usr/sbin:/sbin" inst install mergify-watch 2>&1)
+eq "install refuses when gh is missing" "error: mergify-watch needs gh, and it is not on PATH=$NOGH:/usr/bin:/bin:/usr/sbin:/sbin" "$out"
 rm "$IH/.paseo-relay/auth"
 check_fails "install refuses without ~/.paseo-relay/auth" inst install memwait
 check_fails "no --force passed to launchctl" grep -q -- '--force' "$R/stub/calls"
