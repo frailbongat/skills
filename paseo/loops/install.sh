@@ -17,8 +17,8 @@ usage: $(basename "$0") install <loop> | uninstall <loop> | status   (loop: memw
                      and bootstrap it into gui/<uid>, or into user/<uid> when
                      gui/<uid> does not exist (a Mac with no desktop login).
                      A user/<uid> plist gets LimitLoadToSessionType Background,
-                     because user/<uid> refuses a plist without it, and
-                     gui/<uid> refuses a plist with it.
+                     because user/<uid> refuses a plist without it on macOS 27.
+                     A gui/<uid> plist leaves the key out, as before.
   uninstall <loop>   boot it out and delete the plist
   status             print each loop's plist, launchd domain, and last log lines
 
@@ -53,7 +53,6 @@ OWNER="$LOOPS_HOME/mergify-watch/owner"
 label() { echo "sh.frail.paseo-$1"; }
 plist() { echo "$AGENTS/$(label "$1").plist"; }
 domain() { if "$LAUNCHCTL" print "gui/$U" >/dev/null 2>&1; then echo "gui/$U"; else echo "user/$U"; fi; }
-# Prints each domain that holds the loop's agent.
 loaded_in() {
   local d
   for d in "gui/$U" "user/$U"; do
@@ -153,7 +152,7 @@ case "${1:-}" in
     write_plist "$2" "$path" "$d"
     plutil -lint -s "$(plist "$2")"
     if [ "$2" = mergify-watch ]; then date '+%Y-%m-%dT%H:%M:%S%z' > "$OWNER"; fi
-    "$LAUNCHCTL" bootstrap "$d" "$(plist "$2")"
+    "$LAUNCHCTL" bootstrap "$d" "$(plist "$2")" || { rm -f "$OWNER"; exit 1; }
     echo "installed $(label "$2") in $d, logs in $LOOPS_HOME/$2/" ;;
   uninstall)
     check_loop "${2:-}"

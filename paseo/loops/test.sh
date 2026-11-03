@@ -91,12 +91,14 @@ case "$1" in
       *) exit 1 ;;
     esac ;;
   bootstrap)
+    if [ -e "$d/failboot" ]; then echo "Bootstrap failed: 5: Input/output error" >&2; exit 5; fi
     if [ -e "$d/headless" ] && [ "${2%%/*}" = gui ]; then
       echo "Bootstrap failed: 125: Domain does not support specified action" >&2
       exit 125
     fi
     # Measured on macOS 27: user/<uid> takes a plist only with
-    # LimitLoadToSessionType Background, and gui/<uid> only without the key.
+    # LimitLoadToSessionType Background. The gui/<uid> refusal of the key is
+    # from one probe and models install.sh's rule, not a re-verified fact.
     s=$(plutil -convert json -o - "$3" | jq -r '.LimitLoadToSessionType // ""')
     case "${2%%/*}:$s" in
       user:Background|gui:) ;;
@@ -281,7 +283,7 @@ payload 201 dequeued CHECKS_FAILED "ci failed"
 base=$(nbodies)
 "$MG" --once
 eq "mergify with no owner marker sends nothing and calls no gh" "$base 0" "$(nbodies) $(calls)"
-eq "mergify with no owner marker logs idle once" 1 "$(grep -c 'not the mergify owner; idle' "$MGD/log")"
+eq "mergify with no owner marker logs idle" 1 "$(grep -c 'not the mergify owner; idle' "$MGD/log")"
 check "mergify with no owner marker writes a heartbeat" test -s "$MGD/heartbeat"
 touch "$MGD/owner"
 "$MG" --once
@@ -404,6 +406,10 @@ inst uninstall mergify-watch >/dev/null
 check "uninstall mergify-watch removes the owner marker" test ! -e "$IH/.paseo/loops/mergify-watch/owner"
 case "$(inst status)" in *"mergify-watch: plist absent, not loaded, standby"*) ok "status shows a mergify standby" ;;
   *) bad "status shows a mergify standby" "$(inst status)" ;; esac
+touch "$R/stub/failboot"
+check_fails "install mergify-watch fails when bootstrap fails" inst install mergify-watch
+check "a failed bootstrap leaves no owner marker" test ! -e "$IH/.paseo/loops/mergify-watch/owner"
+rm "$R/stub/failboot"
 mkdir -p "$R/tools"
 printf '#!/bin/sh\nexit 1\n' > "$R/tools/gh"
 chmod +x "$R/tools/gh"
