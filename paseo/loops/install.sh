@@ -15,7 +15,10 @@ usage: $(basename "$0") install <loop> | uninstall <loop> | status   (loop: memw
 
   install <loop>     write ~/Library/LaunchAgents/sh.frail.paseo-<loop>.plist
                      and bootstrap it into gui/<uid>, or into user/<uid> when
-                     gui/<uid> does not exist (a Mac with no desktop login)
+                     gui/<uid> does not exist (a Mac with no desktop login).
+                     A user/<uid> plist gets LimitLoadToSessionType Background,
+                     because user/<uid> refuses a plist without it, and
+                     gui/<uid> refuses a plist with it.
   uninstall <loop>   boot it out and delete the plist
   status             print each loop's plist, launchd domain, and last log lines
 
@@ -85,7 +88,7 @@ xml_escape() {
 }
 
 write_plist() {
-  local loop=$1 path=$2 script args keepalive cmd
+  local loop=$1 path=$2 domain=$3 script args keepalive session="" cmd
   script="$HERE/$loop.sh"
   case "$script$LOOPS_HOME" in *\'*) echo "error: a path holds a single quote: $script or $LOOPS_HOME" >&2; exit 1 ;; esac
   if [ "$loop" = memwait ]; then
@@ -99,6 +102,9 @@ write_plist() {
   <key>ThrottleInterval</key>
   <integer>60</integer>"
   fi
+  case "$domain" in user/*) session="
+  <key>LimitLoadToSessionType</key>
+  <string>Background</string>" ;; esac
   cmd="test -s \"\$HOME/.paseo-relay/url\" && test -s \"\$HOME/.paseo-relay/auth\" || { echo 'missing ~/.paseo-relay/url or auth' >&2; exit 78; }
 export PASEO_RELAY_URL=\"\$(cat \"\$HOME/.paseo-relay/url\")\" PASEO_RELAY_AUTH=\"\$(cat \"\$HOME/.paseo-relay/auth\")\"
 exec '$script'$args"
@@ -124,7 +130,7 @@ exec '$script'$args"
     <string>$(xml_escape "$LOOPS_HOME")</string>
   </dict>
   <key>RunAtLoad</key>
-  <true/>$keepalive
+  <true/>$keepalive$session
   <key>StandardOutPath</key>
   <string>$(xml_escape "$LOOPS_HOME/$loop/launchd.log")</string>
   <key>StandardErrorPath</key>
@@ -143,9 +149,9 @@ case "${1:-}" in
     fi
     path=$(plist_path "$2") || exit 1
     bootout_all "$2"
-    write_plist "$2" "$path"
-    plutil -lint -s "$(plist "$2")"
     d=$(domain)
+    write_plist "$2" "$path" "$d"
+    plutil -lint -s "$(plist "$2")"
     if [ "$2" = mergify-watch ]; then date '+%Y-%m-%dT%H:%M:%S%z' > "$OWNER"; fi
     "$LAUNCHCTL" bootstrap "$d" "$(plist "$2")"
     echo "installed $(label "$2") in $d, logs in $LOOPS_HOME/$2/" ;;

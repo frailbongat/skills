@@ -95,6 +95,13 @@ case "$1" in
       echo "Bootstrap failed: 125: Domain does not support specified action" >&2
       exit 125
     fi
+    # Measured on macOS 27: user/<uid> takes a plist only with
+    # LimitLoadToSessionType Background, and gui/<uid> only without the key.
+    s=$(plutil -convert json -o - "$3" | jq -r '.LimitLoadToSessionType // ""')
+    case "${2%%/*}:$s" in
+      user:Background|gui:) ;;
+      *) echo "Bootstrap failed: 5: Input/output error" >&2; exit 5 ;;
+    esac
     touch "$d/loaded_${2%%/*}_$(basename "$3" .plist)" ;;
   bootout) rm -f "$d/loaded_${2%%/*}_${2##*/}" ;;
   kickstart) [ -e "$d/loaded_${2%%/*}_${2##*/}" ] ;;
@@ -383,6 +390,7 @@ case "$(pget "$MP" '.ProgramArguments[2]')" in
   *'PASEO_RELAY_URL="$(cat "$HOME/.paseo-relay/url")"'*"exec '$HERE/memwait.sh' resume") ok "memwait plist reads the relay files at start" ;;
   *) bad "memwait plist reads the relay files at start" "$(pget "$MP" '.ProgramArguments[2]')" ;;
 esac
+eq "gui install plist has no LimitLoadToSessionType" "null" "$(pget "$MP" .LimitLoadToSessionType)"
 eq "launchctl got two bootstraps" 2 "$(grep -c "^bootstrap gui/$(id -u) $IH/Library/LaunchAgents/sh.frail.paseo-" "$R/stub/calls")"
 inst install mergify-watch >/dev/null
 eq "reinstall boots out first" 1 "$(grep -c "^bootout gui/$(id -u)/sh.frail.paseo-mergify-watch$" "$R/stub/calls")"
@@ -415,6 +423,7 @@ touch "$R/stub/headless"
 : > "$R/stub/calls"
 check "headless install memwait" inst install memwait
 eq "headless install bootstraps user/<uid>" 1 "$(grep -c "^bootstrap user/$U $MP$" "$R/stub/calls")"
+eq "headless install plist has LimitLoadToSessionType Background" "Background" "$(pget "$MP" .LimitLoadToSessionType)"
 inst install memwait >/dev/null
 eq "headless reinstall boots out of user/<uid>" 1 "$(grep -c "^bootout user/$U/sh.frail.paseo-memwait$" "$R/stub/calls")"
 case "$(inst status)" in *"memwait: plist present, loaded in user/$U"*) ok "status prints the user domain" ;;
