@@ -131,8 +131,11 @@ loop() {
 case "${1:-}" in
   add)
     [ $# -eq 3 ] || usage
-    if "$LAUNCHCTL" print "gui/$(id -u)/$LABEL" >/dev/null 2>&1; then agent=1; else agent=0; fi
-    if [ "$agent" = 0 ] && [ "$(relay_mode)" = dry-run ] && [ "${RELAY_DRY:-}" != 1 ]; then
+    agent=""
+    for dom in gui user; do
+      if "$LAUNCHCTL" print "$dom/$(id -u)/$LABEL" >/dev/null 2>&1; then agent="$dom/$(id -u)/$LABEL"; break; fi
+    done
+    if [ -z "$agent" ] && [ "$(relay_mode)" = dry-run ] && [ "${RELAY_DRY:-}" != 1 ]; then
       echo "error: no LaunchAgent and no relay env, so a waiter would drop $2 without telling anyone. Run paseo/loops/install.sh install memwait, or set RELAY_DRY=1 to dry-run." >&2
       exit 1
     fi
@@ -141,9 +144,9 @@ case "${1:-}" in
     log "queued $2 lead=$3"
     # The LaunchAgent run gets the relay env from ~/.paseo-relay; this shell
     # may not have it. kickstart does nothing when the waiter already runs.
-    if [ "$agent" = 1 ]; then
-      "$LAUNCHCTL" kickstart "gui/$(id -u)/$LABEL" >/dev/null 2>&1
-      echo "queued $2 on $H; kicked $LABEL"
+    if [ -n "$agent" ]; then
+      "$LAUNCHCTL" kickstart "$agent" >/dev/null 2>&1
+      echo "queued $2 on $H; kicked $agent"
     else
       nohup "$0" resume >/dev/null 2>&1 < /dev/null &
       echo "queued $2 on $H; waiter started in the background, mode=$(relay_mode)"

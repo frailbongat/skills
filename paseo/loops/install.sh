@@ -5,7 +5,7 @@ HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 LAUNCHCTL="${LAUNCHCTL:-launchctl}"
 LOOPS_HOME="${PASEO_LOOPS_HOME:-$HOME/.paseo/loops}"
 AGENTS="$HOME/Library/LaunchAgents"
-DOMAIN="gui/$(id -u)"
+U=$(id -u)
 LOOPS="memwait mergify-watch"
 
 usage() {
@@ -13,9 +13,14 @@ usage() {
 usage: $(basename "$0") install <loop> | uninstall <loop> | status   (loop: memwait, mergify-watch)
 
   install <loop>     write ~/Library/LaunchAgents/sh.frail.paseo-<loop>.plist
-                     and bootstrap it into gui/<uid>
+                     and bootstrap it into gui/<uid>, or into user/<uid> when
+                     gui/<uid> does not exist (a Mac with no desktop login)
   uninstall <loop>   boot it out and delete the plist
-  status             print each loop's plist, launchd state, and last log lines
+  status             print each loop's plist, launchd domain, and last log lines
+
+launchctl(1) says a user/<uid> domain "may exist independently of a logged-in
+user", but it does not say that domain loads ~/Library/LaunchAgents at boot.
+On a Mac with no desktop login, rerun install after a reboot.
 
 memwait runs \`memwait.sh resume\` once at login, and \`memwait.sh add\` kicks it
 again. mergify-watch runs at login, and launchd restarts it when it exits.
@@ -30,7 +35,18 @@ EOF
 
 label() { echo "sh.frail.paseo-$1"; }
 plist() { echo "$AGENTS/$(label "$1").plist"; }
-loaded() { "$LAUNCHCTL" print "$DOMAIN/$(label "$1")" >/dev/null 2>&1; }
+domain() { if "$LAUNCHCTL" print "gui/$U" >/dev/null 2>&1; then echo "gui/$U"; else echo "user/$U"; fi; }
+# Prints each domain that holds the loop's agent.
+loaded_in() {
+  local d
+  for d in "gui/$U" "user/$U"; do
+    if "$LAUNCHCTL" print "$d/$(label "$1")" >/dev/null 2>&1; then echo "$d"; fi
+  done
+}
+bootout_all() {
+  local d
+  for d in $(loaded_in "$1"); do "$LAUNCHCTL" bootout "$d/$(label "$1")"; done
+}
 
 check_loop() {
   case "${1:-}" in memwait|mergify-watch) ;; *) usage ;; esac
@@ -99,20 +115,22 @@ case "${1:-}" in
       echo "error: ~/.paseo-relay/url and ~/.paseo-relay/auth must both exist and be non-empty" >&2
       exit 1
     fi
-    if loaded "$2"; then "$LAUNCHCTL" bootout "$DOMAIN/$(label "$2")"; fi
+    bootout_all "$2"
     write_plist "$2"
     plutil -lint -s "$(plist "$2")"
-    "$LAUNCHCTL" bootstrap "$DOMAIN" "$(plist "$2")"
-    echo "installed $(label "$2"), logs in $LOOPS_HOME/$2/" ;;
+    d=$(domain)
+    "$LAUNCHCTL" bootstrap "$d" "$(plist "$2")"
+    echo "installed $(label "$2") in $d, logs in $LOOPS_HOME/$2/" ;;
   uninstall)
     check_loop "${2:-}"
-    if loaded "$2"; then "$LAUNCHCTL" bootout "$DOMAIN/$(label "$2")"; fi
+    bootout_all "$2"
     rm -f "$(plist "$2")"
     echo "uninstalled $(label "$2")" ;;
   status)
     for loop in $LOOPS; do
       if [ -f "$(plist "$loop")" ]; then p=present; else p=absent; fi
-      if loaded "$loop"; then l=loaded; else l="not loaded"; fi
+      l=$(loaded_in "$loop" | paste -sd ' ' -)
+      if [ -n "$l" ]; then l="loaded in $l"; else l="not loaded"; fi
       echo "$loop: plist $p, $l"
       tail -n 3 "$LOOPS_HOME/$loop/log" 2>/dev/null | sed 's/^/  /' || true
     done ;;

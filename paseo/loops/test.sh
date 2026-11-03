@@ -81,11 +81,23 @@ cat > "$R/stub/launchctl" <<'SH'
 #!/usr/bin/env bash
 d=$(dirname "$0")
 echo "$*" >> "$d/calls"
+# With $d/headless, there is no gui/<uid> domain, as on a Mac with no desktop login.
 case "$1" in
-  print) [ -e "$d/loaded_${2##*/}" ] ;;
-  bootstrap) touch "$d/loaded_$(basename "$3" .plist)" ;;
-  bootout) rm -f "$d/loaded_${2##*/}" ;;
-  kickstart) exit 0 ;;
+  print)
+    case "$2" in
+      */*/*) [ -e "$d/loaded_${2%%/*}_${2##*/}" ] ;;
+      gui/*) [ ! -e "$d/headless" ] ;;
+      user/*) exit 0 ;;
+      *) exit 1 ;;
+    esac ;;
+  bootstrap)
+    if [ -e "$d/headless" ] && [ "${2%%/*}" = gui ]; then
+      echo "Bootstrap failed: 125: Domain does not support specified action" >&2
+      exit 125
+    fi
+    touch "$d/loaded_${2%%/*}_$(basename "$3" .plist)" ;;
+  bootout) rm -f "$d/loaded_${2%%/*}_${2##*/}" ;;
+  kickstart) [ -e "$d/loaded_${2%%/*}_${2##*/}" ] ;;
   *) exit 1 ;;
 esac
 SH
@@ -142,7 +154,7 @@ check "release_lock drops a lock this shell holds" test ! -e "$LK/c.lock"
 MW="$HERE/memwait.sh"
 MWD="$R/loops/memwait"
 export MW_HOST=testhost MW_INTERVAL=0
-touch "$R/stub/loaded_sh.frail.paseo-memwait"
+touch "$R/stub/loaded_gui_sh.frail.paseo-memwait"
 OKCHK='echo verdict=ok free=50% min=25%'
 HELDCHK='echo verdict=held free=10% min=25%'
 
@@ -211,7 +223,7 @@ kill "$live"; wait "$live" 2>/dev/null
 MW_CHECK=$OKCHK MW_TICKS=1 "$MW" resume
 eq "memwait takes over a lock left by a dead pid" 6 "$(nbodies)"
 
-rm -f "$R/stub/loaded_sh.frail.paseo-memwait"
+rm -f "$R/stub/loaded_gui_sh.frail.paseo-memwait"
 q0=$(cat "$MWD/queue.json")
 check_fails "memwait add refuses with no LaunchAgent and no relay env" \
   env PASEO_RELAY_URL= PASEO_RELAY_AUTH= "$MW" add https://t/G lead-g
@@ -357,6 +369,23 @@ check "uninstall removes the plist" test ! -e "$MP"
 rm "$IH/.paseo-relay/auth"
 check_fails "install refuses without ~/.paseo-relay/auth" inst install memwait
 check_fails "no --force passed to launchctl" grep -q -- '--force' "$R/stub/calls"
+
+U=$(id -u)
+printf '%s' "$PASEO_RELAY_AUTH" > "$IH/.paseo-relay/auth"
+rm -f "$R/stub"/loaded_*
+touch "$R/stub/headless"
+: > "$R/stub/calls"
+check "headless install memwait" inst install memwait
+eq "headless install bootstraps user/<uid>" 1 "$(grep -c "^bootstrap user/$U $MP$" "$R/stub/calls")"
+inst install memwait >/dev/null
+eq "headless reinstall boots out of user/<uid>" 1 "$(grep -c "^bootout user/$U/sh.frail.paseo-memwait$" "$R/stub/calls")"
+case "$(inst status)" in *"memwait: plist present, loaded in user/$U"*) ok "status prints the user domain" ;;
+  *) bad "status prints the user domain" "$(inst status)" ;; esac
+"$MW" add https://t/H lead-h >/dev/null
+eq "headless memwait add kickstarts user/<uid>" 1 "$(grep -c "^kickstart user/$U/sh.frail.paseo-memwait$" "$R/stub/calls")"
+inst uninstall memwait >/dev/null
+eq "headless uninstall boots out of user/<uid>" 2 "$(grep -c "^bootout user/$U/sh.frail.paseo-memwait$" "$R/stub/calls")"
+rm -f "$R/stub/headless"
 
 eq "every request carried the auth header, path, and text/plain" "" "$(grep -v '^auth_ok$' "$R/relay/requests")"
 leaks=$(grep -rlE "test-url-token-7f3a|$TEST_HEADER_VALUE" "$R/loops" "$IH/Library" "$IH/.paseo" 2>/dev/null)
