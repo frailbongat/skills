@@ -15,7 +15,9 @@ usage() {
 usage: mergify-watch.sh [--once]
 
 Watches the Mergify merge queue with read-only gh and fires one failed relay
-event per drop. --once runs a single tick.
+event per drop. --once runs a single tick. With no owner marker at
+$PASEO_LOOPS_HOME/mergify-watch/owner (install.sh install mergify-watch writes
+it), each tick only writes the heartbeat.
 
 Env: MW_REPO (Project-Lit/litflows), MW_INTERVAL (300), PASEO_LOOPS_HOME
 (~/.paseo/loops), PASEO_RELAY_URL and PASEO_RELAY_AUTH (see relay.sh).
@@ -89,6 +91,10 @@ QQ='[.statusCheckRollup[]?|select(.name=="Mergify Merge Queue")]|sort_by(.starte
 
 tick() {
   local list n v head qs qc p reason left body
+  if [ -z "$FIX" ] && ! command -v gh >/dev/null 2>&1; then
+    log "gh not found on PATH=$PATH; retry next tick"
+    return
+  fi
   if ! list=$(ghlist) || ! jq -e 'type=="array"' >/dev/null 2>&1 <<<"$list"; then
     log "gh pr list failed; retry next tick"
     return
@@ -122,9 +128,15 @@ tick() {
 }
 
 log "start pid=$$ repo=$REPO mode=$(relay_mode) once=$ONCE interval=${INT}s"
+idle_logged=0
 while :; do
   beat
-  tick
+  if [ -e "$D/owner" ]; then
+    tick
+  elif [ "$idle_logged" = 0 ]; then
+    log "not the mergify owner; idle"
+    idle_logged=1
+  fi
   beat
   [ "$ONCE" = 1 ] && exit 0
   sleep "$INT" &

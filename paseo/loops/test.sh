@@ -81,11 +81,32 @@ cat > "$R/stub/launchctl" <<'SH'
 #!/usr/bin/env bash
 d=$(dirname "$0")
 echo "$*" >> "$d/calls"
+# With $d/headless, there is no gui/<uid> domain, as on a Mac with no desktop login.
 case "$1" in
-  print) [ -e "$d/loaded_${2##*/}" ] ;;
-  bootstrap) touch "$d/loaded_$(basename "$3" .plist)" ;;
-  bootout) rm -f "$d/loaded_${2##*/}" ;;
-  kickstart) exit 0 ;;
+  print)
+    case "$2" in
+      */*/*) [ -e "$d/loaded_${2%%/*}_${2##*/}" ] ;;
+      gui/*) [ ! -e "$d/headless" ] ;;
+      user/*) exit 0 ;;
+      *) exit 1 ;;
+    esac ;;
+  bootstrap)
+    if [ -e "$d/failboot" ]; then echo "Bootstrap failed: 5: Input/output error" >&2; exit 5; fi
+    if [ -e "$d/headless" ] && [ "${2%%/*}" = gui ]; then
+      echo "Bootstrap failed: 125: Domain does not support specified action" >&2
+      exit 125
+    fi
+    # Measured on macOS 27: user/<uid> takes a plist only with
+    # LimitLoadToSessionType Background. The gui/<uid> refusal of the key is
+    # from one probe and models install.sh's rule, not a re-verified fact.
+    s=$(plutil -convert json -o - "$3" | jq -r '.LimitLoadToSessionType // ""')
+    case "${2%%/*}:$s" in
+      user:Background|gui:) ;;
+      *) echo "Bootstrap failed: 5: Input/output error" >&2; exit 5 ;;
+    esac
+    touch "$d/loaded_${2%%/*}_$(basename "$3" .plist)" ;;
+  bootout) rm -f "$d/loaded_${2%%/*}_${2##*/}" ;;
+  kickstart) [ -e "$d/loaded_${2%%/*}_${2##*/}" ] ;;
   *) exit 1 ;;
 esac
 SH
@@ -142,7 +163,7 @@ check "release_lock drops a lock this shell holds" test ! -e "$LK/c.lock"
 MW="$HERE/memwait.sh"
 MWD="$R/loops/memwait"
 export MW_HOST=testhost MW_INTERVAL=0
-touch "$R/stub/loaded_sh.frail.paseo-memwait"
+touch "$R/stub/loaded_gui_sh.frail.paseo-memwait"
 OKCHK='echo verdict=ok free=50% min=25%'
 HELDCHK='echo verdict=held free=10% min=25%'
 
@@ -211,7 +232,7 @@ kill "$live"; wait "$live" 2>/dev/null
 MW_CHECK=$OKCHK MW_TICKS=1 "$MW" resume
 eq "memwait takes over a lock left by a dead pid" 6 "$(nbodies)"
 
-rm -f "$R/stub/loaded_sh.frail.paseo-memwait"
+rm -f "$R/stub/loaded_gui_sh.frail.paseo-memwait"
 q0=$(cat "$MWD/queue.json")
 check_fails "memwait add refuses with no LaunchAgent and no relay env" \
   env PASEO_RELAY_URL= PASEO_RELAY_AUTH= "$MW" add https://t/G lead-g
@@ -219,10 +240,15 @@ out=$(PASEO_RELAY_URL='' PASEO_RELAY_AUTH='' "$MW" add https://t/G lead-g 2>&1 >
 case "$out" in *"error: no LaunchAgent and no relay env"*) ok "memwait add says why on stderr" ;;
   *) bad "memwait add says why on stderr" "$out" ;; esac
 eq "memwait add refusal leaves the queue alone" "$q0" "$(cat "$MWD/queue.json")"
-out=$(RELAY_DRY=1 MW_CHECK=$OKCHK "$MW" add https://t/F lead-f 2>&1)
+# macOS nohup exits 127 with "can't detach from console" when no desktop
+# login owns the console, so this fake does the same.
+mkdir -p "$R/nohup-fail"
+printf '#!/bin/sh\necho "nohup: can'"'"'t detach from console" >&2\nexit 127\n' > "$R/nohup-fail/nohup"
+chmod +x "$R/nohup-fail/nohup"
+out=$(PATH="$R/nohup-fail:$PATH" RELAY_DRY=1 MW_CHECK=$OKCHK "$MW" add https://t/F lead-f 2>&1)
 case "$out" in *"waiter started in the background, mode=dry-run"*) ok "memwait add starts a waiter when no LaunchAgent is loaded" ;;
   *) bad "memwait add starts a waiter when no LaunchAgent is loaded" "$out" ;; esac
-for _ in $(seq 1 50); do grep -q 'freed https://t/F' "$MWD/log" && break; sleep 0.1; done
+for _ in $(seq 1 300); do grep -q 'DRY-RUN status: ready | ticket: https://t/F' "$MWD/log" && break; sleep 0.1; done
 check "memwait background waiter dry-runs" grep -q 'DRY-RUN status: ready | ticket: https://t/F' "$MWD/log"
 eq "memwait background dry-run reached no relay" 6 "$(nbodies)"
 
@@ -249,6 +275,20 @@ payload() {
        body:("<!-- Mergify Payload -*- " + ({state:$st, left_at:$l, dequeue_reason:{code:$c, message:$m}}|tojson) + " -->")}]' > "$F/comments_$1.json"
 }
 calls() { wc -l < "$F/calls" | tr -d ' '; }
+mkdir -p "$MGD"
+echo '{"201":"x"}' > "$MGD/seen.json"
+list "$(pr 201 fff COMPLETED NEUTRAL)"
+payload 201 dequeued CHECKS_FAILED "ci failed"
+: > "$F/calls"
+base=$(nbodies)
+"$MG" --once
+eq "mergify with no owner marker sends nothing and calls no gh" "$base 0" "$(nbodies) $(calls)"
+eq "mergify with no owner marker logs idle" 1 "$(grep -c 'not the mergify owner; idle' "$MGD/log")"
+check "mergify with no owner marker writes a heartbeat" test -s "$MGD/heartbeat"
+touch "$MGD/owner"
+"$MG" --once
+eq "mergify with the owner marker sends the drop" $((base + 1)) "$(nbodies)"
+echo '{}' > "$MGD/seen.json"
 : > "$F/calls"
 base=$(nbodies)
 
@@ -324,6 +364,11 @@ c0=$(nbodies)
 check "mergify logs a gh failure" grep -q 'gh pr list failed; retry next tick' "$MGD/log"
 eq "mergify: a gh failure sends nothing" "$c0" "$(nbodies)"
 check "mergify writes a heartbeat" test -s "$MGD/heartbeat"
+NOGH="$R/nogh"
+mkdir -p "$NOGH"
+ln -sf "$(command -v jq)" "$NOGH/jq"
+env -u MW_FIXTURES PATH="$NOGH:/usr/bin:/bin:/usr/sbin:/sbin" "$MG" --once
+check "mergify logs that gh is missing and the PATH it searched" grep -q "gh not found on PATH=$NOGH:/usr/bin:" "$MGD/log"
 unset MW_FIXTURES MW_REPO
 
 IH="$T/home"
@@ -339,22 +384,61 @@ check "install mergify-watch" inst install mergify-watch
 MP="$IH/Library/LaunchAgents/sh.frail.paseo-memwait.plist"
 GP="$IH/Library/LaunchAgents/sh.frail.paseo-mergify-watch.plist"
 check "plists pass plutil -lint" plutil -lint -s "$MP" "$GP"
-eq "memwait plist runs resume with no KeepAlive" "false" "$(plutil -extract KeepAlive raw "$MP" 2>/dev/null || echo false)"
-eq "mergify-watch plist has KeepAlive" "true" "$(plutil -extract KeepAlive raw "$GP")"
-case "$(plutil -extract ProgramArguments.2 raw "$MP")" in
+# Older macOS plutil has no "raw" format for -extract, so go through JSON.
+pget() { plutil -convert json -o - "$1" | jq -r "$2"; }
+eq "memwait plist runs resume with no KeepAlive" "false" "$(pget "$MP" '.KeepAlive // false')"
+eq "mergify-watch plist has KeepAlive" "true" "$(pget "$GP" .KeepAlive)"
+case "$(pget "$MP" '.ProgramArguments[2]')" in
   *'PASEO_RELAY_URL="$(cat "$HOME/.paseo-relay/url")"'*"exec '$HERE/memwait.sh' resume") ok "memwait plist reads the relay files at start" ;;
-  *) bad "memwait plist reads the relay files at start" "$(plutil -extract ProgramArguments.2 raw "$MP")" ;;
+  *) bad "memwait plist reads the relay files at start" "$(pget "$MP" '.ProgramArguments[2]')" ;;
 esac
+eq "gui install plist has no LimitLoadToSessionType" "null" "$(pget "$MP" .LimitLoadToSessionType)"
 eq "launchctl got two bootstraps" 2 "$(grep -c "^bootstrap gui/$(id -u) $IH/Library/LaunchAgents/sh.frail.paseo-" "$R/stub/calls")"
 inst install mergify-watch >/dev/null
 eq "reinstall boots out first" 1 "$(grep -c "^bootout gui/$(id -u)/sh.frail.paseo-mergify-watch$" "$R/stub/calls")"
+check "install mergify-watch writes the owner marker" test -e "$IH/.paseo/loops/mergify-watch/owner"
 out=$(inst status)
-case "$out" in *"memwait: plist present, loaded"*"mergify-watch: plist present, loaded"*) ok "status shows both loaded" ;; *) bad "status shows both loaded" "$out" ;; esac
+case "$out" in *"memwait: plist present, loaded"*"mergify-watch: plist present, loaded"*", owner"*) ok "status shows both loaded and the mergify owner" ;;
+  *) bad "status shows both loaded and the mergify owner" "$out" ;; esac
 inst uninstall memwait >/dev/null
 check "uninstall removes the plist" test ! -e "$MP"
+inst uninstall mergify-watch >/dev/null
+check "uninstall mergify-watch removes the owner marker" test ! -e "$IH/.paseo/loops/mergify-watch/owner"
+case "$(inst status)" in *"mergify-watch: plist absent, not loaded, standby"*) ok "status shows a mergify standby" ;;
+  *) bad "status shows a mergify standby" "$(inst status)" ;; esac
+touch "$R/stub/failboot"
+check_fails "install mergify-watch fails when bootstrap fails" inst install mergify-watch
+check "a failed bootstrap leaves no owner marker" test ! -e "$IH/.paseo/loops/mergify-watch/owner"
+rm "$R/stub/failboot"
+mkdir -p "$R/tools"
+printf '#!/bin/sh\nexit 1\n' > "$R/tools/gh"
+chmod +x "$R/tools/gh"
+PATH="$R/tools:$PATH" inst install mergify-watch >/dev/null
+eq "the plist PATH starts with the dir of the gh install found" "$R/tools" "$(pget "$GP" .EnvironmentVariables.PATH | cut -d: -f1)"
+eq "the plist PATH lists each dir once" "" "$(pget "$GP" .EnvironmentVariables.PATH | tr : '\n' | sort | uniq -d)"
+out=$(PATH="$NOGH:/usr/bin:/bin:/usr/sbin:/sbin" inst install mergify-watch 2>&1)
+eq "install refuses when gh is missing" "error: mergify-watch needs gh, and it is not on PATH=$NOGH:/usr/bin:/bin:/usr/sbin:/sbin" "$out"
 rm "$IH/.paseo-relay/auth"
 check_fails "install refuses without ~/.paseo-relay/auth" inst install memwait
 check_fails "no --force passed to launchctl" grep -q -- '--force' "$R/stub/calls"
+
+U=$(id -u)
+printf '%s' "$PASEO_RELAY_AUTH" > "$IH/.paseo-relay/auth"
+rm -f "$R/stub"/loaded_*
+touch "$R/stub/headless"
+: > "$R/stub/calls"
+check "headless install memwait" inst install memwait
+eq "headless install bootstraps user/<uid>" 1 "$(grep -c "^bootstrap user/$U $MP$" "$R/stub/calls")"
+eq "headless install plist has LimitLoadToSessionType Background" "Background" "$(pget "$MP" .LimitLoadToSessionType)"
+inst install memwait >/dev/null
+eq "headless reinstall boots out of user/<uid>" 1 "$(grep -c "^bootout user/$U/sh.frail.paseo-memwait$" "$R/stub/calls")"
+case "$(inst status)" in *"memwait: plist present, loaded in user/$U"*) ok "status prints the user domain" ;;
+  *) bad "status prints the user domain" "$(inst status)" ;; esac
+"$MW" add https://t/H lead-h >/dev/null
+eq "headless memwait add kickstarts user/<uid>" 1 "$(grep -c "^kickstart user/$U/sh.frail.paseo-memwait$" "$R/stub/calls")"
+inst uninstall memwait >/dev/null
+eq "headless uninstall boots out of user/<uid>" 2 "$(grep -c "^bootout user/$U/sh.frail.paseo-memwait$" "$R/stub/calls")"
+rm -f "$R/stub/headless"
 
 eq "every request carried the auth header, path, and text/plain" "" "$(grep -v '^auth_ok$' "$R/relay/requests")"
 leaks=$(grep -rlE "test-url-token-7f3a|$TEST_HEADER_VALUE" "$R/loops" "$IH/Library" "$IH/.paseo" 2>/dev/null)
