@@ -1,6 +1,6 @@
 # Mix
 
-Mix builds one new variant from the parts of other variants that the user's notes name, and makes the parts work as one design. One `worker` builds it. The words target, view, variant, mix, brand lock, look-only, pick, steals, and `<ext>` mean what [SKILL.md](SKILL.md) says. Launch the subagent as the `paseo-delegation` skill says.
+Mix builds one new variant from the parts of other variants that the user's notes name, and makes the parts work as one design. One `worker` builds it. The words target, view, variant, mix, brand lock, look-only, pick, steals, and `<ext>` mean what [SKILL.md](SKILL.md) says. Launch the subagent as a T3 thread, as the "T3 threads" section of SKILL.md says.
 
 ## Steps
 
@@ -29,13 +29,13 @@ Done when every note maps to an item, every item names ids that are in `variantI
 
 ### 3. Build the mix
 
-Launch one `worker` with the mix brief below, in the current workspace, since the mix lands in the checkout the app runs from.
+Launch one `worker` with the mix brief below, with `isolation: "shared"`, since the mix lands in the checkout the app runs from.
 
 Done when the worker reports back and its screenshot of the mix exists.
 
 ### 4. Check and commit
 
-1. Run the typecheck. Send the mix's errors back to the worker with `send_agent_prompt` and wait for the fix.
+1. Run the typecheck. Send the mix's errors back to the worker with `t3_thread_send` and wait for the fix.
 2. Confirm that `index.<ext>` imports the mix and lists it last, and that `variantIds` in `state.json` ends with `mix`.
 3. Make the one mix commit with `git add -A && git commit -m "explore: <slug> mix"`.
 

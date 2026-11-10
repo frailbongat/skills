@@ -40,9 +40,23 @@ Fourth source: `hallmark`
 
 The `Fourth source` line is the switch. It names `hallmark` or `awwwards`, and the other key does not run. To bring awwwards back, make that one line read ``Fourth source: `awwwards` ``. A default run then builds `awwwards-1` and `awwwards-2` in place of `hallmark-1` and `hallmark-2`. [HALLMARK.md](HALLMARK.md) covers install and scoring.
 
+## T3 threads
+
+Every subagent is a T3 Code thread: a `scout`, a `worker`, or a `reviewer`, named by what its brief asks. You start each one with the T3 tools of the T3 thread this session runs in. When those tools (`orchestrator_capabilities`, `delegate_task`, `task_status`, `t3_thread_send`) are missing, stop and tell the user to run the skill from a T3 Code thread.
+
+- **Launch.** Call `orchestrator_capabilities` once, before the first launch. Then call `delegate_task` once per thread with `task` set to the filled brief, a `title` such as `scout <slug>` or `<skill> <slug>`, `isolation: "shared"`, `mode: "async"`, a `clientRequestId` such as `design-explore-<slug>-<skill>`, and `target: {providerInstanceId: "claudeAgent", model: "claude-opus-5-5", options: {effort: "<effort>"}}`. Use neither Claude's own `Agent` tool, since it makes no T3 thread, nor `t3_thread_launch`, since a new top-level thread does not run in this checkout.
+- **Same checkout.** `isolation: "shared"` runs the thread in this session's checkout, on the branch that is checked out, so its files land where the app runs. Never pass `"worktree"`. Each thread writes only the files its brief names, so one file has one writer.
+- **Effort.** A `scout` or `reviewer` runs at `medium`, the T3 default. A `worker` runs at `high`, since its work is UI.
+- **Parallel.** Launch threads that do not depend on each other in one turn.
+- **Wait.** A thread's finish wakes this session, so end your turn once the threads are out. Do not poll with `task_status`, `t3_thread_wait`, or `sleep`. When it wakes you, call `task_status` with the thread's `taskId`, and its `summary` is the thread's final report. A thread that asks a question waits for an answer: answer from the brief, or ask the user.
+- **Fix round.** Send errors back to the same thread with `t3_thread_send`, passing `threadId` as the `childThreadId` from its launch, the errors as `message`, and `mode: "auto"`. A finished thread starts a new run and returns a new `taskId`, and its finish wakes you again.
+- **Only the top session launches threads.** Every brief ends with the closing block in [BRIEFS.md](BRIEFS.md), so a thread starts no threads or subagents of its own.
+
+Name each thread you launched by its `link`, with what it is for, one line each.
+
 ## Explore
 
-Platform details live in [WEB.md](WEB.md) for Next.js App Router and plain React on Vite, in [EXPO.md](EXPO.md) for Expo Router, in [ASTRO.md](ASTRO.md) for Astro, and in [SVELTE.md](SVELTE.md) for SvelteKit. Read the one for this project as soon as step 2 names the platform. The subagent briefs are in [BRIEFS.md](BRIEFS.md). Launch subagents as the `paseo-delegation` skill says.
+Platform details live in [WEB.md](WEB.md) for Next.js App Router and plain React on Vite, in [EXPO.md](EXPO.md) for Expo Router, in [ASTRO.md](ASTRO.md) for Astro, and in [SVELTE.md](SVELTE.md) for SvelteKit. Read the one for this project as soon as step 2 names the platform. The subagent briefs are in [BRIEFS.md](BRIEFS.md). Launch subagents as T3 threads, as the next section says.
 
 ### 1. Clean tree
 
@@ -114,14 +128,14 @@ Done when `state.json` holds this exploration with every field filled, and the r
 
 ### 5. Build the variants
 
-Launch one `worker` per chosen skill, all at once, each with the variant brief. Launch them in the current workspace, since the variants have to land in the checkout the app runs from and each worker writes only files named after its own variant ids.
+Launch one `worker` per chosen skill, all at once, each with the variant brief. Launch them with `isolation: "shared"`, since the variants have to land in the checkout the app runs from and each worker writes only files named after its own variant ids.
 
 Done when every worker has reported back and every planned variant file exists.
 
 ### 6. Check and commit
 
 1. Import every finished variant into `index.<ext>` and add it after `current`, in the table's skill order. Bring `variantIds` in `state.json` up to date.
-2. Run the typecheck. Fix wiring errors yourself. Send a variant's errors back to its worker with `send_agent_prompt` and wait for the fix.
+2. Run the typecheck. Fix wiring errors yourself. Send a variant's errors back to its worker with `t3_thread_send` and wait for the fix.
 3. Make the one explore commit on the current branch with `git add -A && git commit -m "explore: <slug> variants"`.
 
 Done when the typecheck exits 0 and `git status --porcelain` prints nothing.
