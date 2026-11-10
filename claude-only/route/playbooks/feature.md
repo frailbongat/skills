@@ -24,6 +24,7 @@
    - If something leaks, stop and name the key, never the value.
    ```
 5. Verify on the matching surface. "Inconclusive" or wrong-surface is not a pass. Flag it.
+   Light and dark mode (Frail's rule Oct 25 2026, all projects): proof covers both light and dark mode only when the ticket is a UI redesign or a UI task that spans both modes. Otherwise proof shows one mode only, and dark is preferred. Example: frailbongat/wobble PR #373 (which card dues show in Due this week) needed dark-only proof.
 6. Rebase into small, ordered commits. Stack follow-ups.
    Use the **sequence-verifiable-units** principle skill, building, verifying, and committing each small unit before the next.
 7. If the design is contested, `interrogate` before shipping.

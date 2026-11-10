@@ -47,6 +47,8 @@ When 2 or more agents will work in the same code, run one `scout` first and tell
 
 Each agent starts with zero context, so make the briefing self-contained. Name files by path and let the agent read them instead of pasting their contents. Name a finished agent's report as "the last activity of Paseo agent <id>". The agent reads it with `get_agent_activity` and `limit: 1`, which returns the full final report.
 
+A brief for any agent that captures UI proof (screenshots or video) also carries this line, pasted verbatim: "Light and dark mode (Frail's rule Oct 25 2026, all projects): proof covers both light and dark mode only when the ticket is a UI redesign or a UI task that spans both modes. Otherwise proof shows one mode only, and dark is preferred. Example: frailbongat/wobble PR #373 (which card dues show in Due this week) needed dark-only proof."
+
 End every brief, for every profile, with this block, pasted verbatim:
 
 ```
