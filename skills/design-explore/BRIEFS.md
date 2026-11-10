@@ -1,6 +1,6 @@
 # Explore briefs
 
-Fill every `<...>` before sending, with absolute paths. `<skill-dir>` is `~/.claude/skills/design-explore`. `<platform-file>` is WEB.md, EXPO.md, ASTRO.md, or SVELTE.md, the one for this project. `<ext>` is `astro` on Astro, `svelte` on SvelteKit, and `tsx` everywhere else. `<Name>` is the view's component name without `View`, such as `Profile`.
+Fill every `<...>` before sending, with absolute paths. End every brief here, in LOCK.md, and in MIX.md with the closing block at the bottom of this file. `<skill-dir>` is `~/.claude/skills/design-explore`. `<platform-file>` is WEB.md, EXPO.md, ASTRO.md, or SVELTE.md, the one for this project. `<ext>` is `astro` on Astro, `svelte` on SvelteKit, and `tsx` everywhere else. `<Name>` is the view's component name without `View`, such as `Profile`.
 
 ## Scout brief
 
@@ -56,4 +56,20 @@ The Hallmark rule:
 
 ```
 - For a screen someone works in, follow "App screens" in Hallmark's references/flow.md. Skip Hallmark's question, theme deal, and log, and never run its imagegen.mjs. The brand lock replaces any theme Hallmark would deal. Write nothing under `.hallmark/`.
+```
+
+## Closing block
+
+Paste it verbatim at the end of every brief.
+
+```
+You are a T3 child thread. Do the work yourself in this checkout, and start no threads or subagents. End with your report.
+
+HARD RULE — never print a secret:
+- No cat/grep/head/tail/less/sed on `.env*` or `~/.config/litflows-secrets/*`, even through a redactor.
+- No env, printenv, export -p, set -x, or process.env logging.
+- No ariaSnapshot, page.content(), HTML dumps or traces of a page with a filled password field.
+- No `convex env get` on a secret; use `convex env list | grep -c '^NAME'`.
+- Check keys only with `grep -c '^NAME=' <file>` or `test -n "$NAME"`.
+- If something leaks, stop and name the key, never the value.
 ```

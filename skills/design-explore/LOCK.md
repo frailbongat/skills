@@ -1,6 +1,6 @@
 # Lock
 
-Lock keeps one variant as the view, deletes the exploration, and makes one cleanup commit on the current branch. It usually runs in a fresh session, so every fact comes from `state.json`. The words owner, view, variant, look-only, shared folder, and `<ext>` mean what [SKILL.md](SKILL.md) says. The `platform` field in `state.json` names the platform. Launch subagents as the `paseo-delegation` skill says.
+Lock keeps one variant as the view, deletes the exploration, and makes one cleanup commit on the current branch. It usually runs in a fresh session, so every fact comes from `state.json`. The words owner, view, variant, look-only, shared folder, and `<ext>` mean what [SKILL.md](SKILL.md) says. The `platform` field in `state.json` names the platform. Launch subagents as T3 threads, as the "T3 threads" section of SKILL.md says.
 
 ## Steps
 
@@ -20,7 +20,7 @@ Done when the worker reports all three checks passing and your own run of its gr
 
 ### 3. Review and commit
 
-Launch a fresh `reviewer` with the review brief below. Send its findings to the lock worker with `send_agent_prompt`. Then make the one lock commit with `git add -A && git commit -m "explore: lock <slug> as <variant-id>"`.
+Launch a fresh `reviewer` with the review brief below. Send its findings to the lock worker with `t3_thread_send`. Then make the one lock commit with `git add -A && git commit -m "explore: lock <slug> as <variant-id>"`.
 
 Done when every finding is fixed or the user accepted it, and `git status --porcelain` prints nothing.
 
